@@ -40,30 +40,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import { backend } from '../backend'
-import axios from 'axios'
-
-interface User {
-  _id?: string
-  ime?: string
-}
+import { getUsers, type User } from '@/services/users'
 
 const users = ref<User[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const fetchUsers = async () => {
+async function fetchUsers() {
   loading.value = true
   error.value = null
   try {
-    const { data } = await backend.get<User[]>('/users')
-    users.value = Array.isArray(data) ? data : []
-  } catch (err: unknown) {
-    const msg = axios.isAxiosError(err)
-      ? ((err.response?.data as any)?.poruka ?? err.message)
-      : 'Greška pri dohvatanju korisnika'
-    error.value = msg
-    console.error('Error fetching users:', err)
+    users.value = await getUsers()
+  } catch (e) {
+    error.value = 'Greška pri dohvatanju korisnika'
+    console.error(e)
   } finally {
     loading.value = false
   }
