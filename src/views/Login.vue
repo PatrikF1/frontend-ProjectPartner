@@ -1,5 +1,7 @@
 <template>
-  <div class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+  <div
+    class="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-gray-900 text-white"
+  >
     <div class="sm:mx-auto sm:w-full sm:max-w-sm">
       <img
         class="mx-auto h-10 w-auto"
@@ -12,7 +14,7 @@
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-      <form class="space-y-6" action="#" method="POST">
+      <form class="space-y-6" @submit.prevent="onSubmit">
         <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-100">Email address</label>
           <div class="mt-2">
@@ -56,15 +58,23 @@
         </div>
       </form>
 
-      <p class="mt-10 text-center text-sm/6 text-gray-400">
-        Not a member?
-        {{ ' ' }}
-        <a href="#" class="font-semibold text-indigo-400 hover:text-indigo-300"
-          >Start a 14 day free trial</a
-        >
+      <p class="mt-8 text-center text-sm/6 text-gray-400">
+        Don't have an account?
+        <RouterLink to="/login" class="font-semibold text-indigo-400 hover:text-indigo-300">
+          Sign in
+        </RouterLink>
       </p>
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function onSubmit() {
+  // TODO: ovdje ide prava auth logika kao i na reg
+  router.push('/home')
+}
+</script>
