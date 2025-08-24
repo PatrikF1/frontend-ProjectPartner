@@ -70,11 +70,16 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { reactive, ref } from 'vue'
+import { backend } from '@/services/backend'
+import type { StringMappingType } from 'typescript'
 
 const router = useRouter()
 
-function onSubmit() {
-  // TODO: ovdje ide prava auth logika kao i na reg
-  router.push('/home')
+type LoginForm = {
+  email: string
+  password: string
 }
+
+function onSubmit() {}
 </script>
