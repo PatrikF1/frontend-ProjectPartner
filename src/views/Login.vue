@@ -19,6 +19,7 @@
           <label for="email" class="block text-sm/6 font-medium text-gray-100">Email address</label>
           <div class="mt-2">
             <input
+              v-model.trim="form.email"
               type="email"
               name="email"
               id="email"
@@ -39,6 +40,7 @@
           </div>
           <div class="mt-2">
             <input
+              v-model.trim="form.password"
               type="password"
               name="password"
               id="password"
@@ -72,7 +74,6 @@
 import { useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { backend } from '@/services/backend'
-import type { StringMappingType } from 'typescript'
 
 const router = useRouter()
 
@@ -81,5 +82,37 @@ type LoginForm = {
   password: string
 }
 
-function onSubmit() {}
+const form = reactive<LoginForm>({
+  email: '',
+  password: '',
+})
+
+const loading = ref(false)
+const error = ref<string | null>(null)
+const success = ref(false)
+
+async function onSubmit() {
+  error.value = null
+  if (!form.email || !form.password) {
+    error.value = 'Sva obavezna polja su obavezna'
+    return
+  }
+
+  loading.value = true
+  try {
+    const payload = {
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+    }
+    await backend.post('/api/auth/login', payload)
+    success.value = true
+    console.log('Uspijesna prijava1')
+    setTimeout(() => router.push('/home'), 200)
+  } catch (e: any) {
+    error.value = e?.response?.data?.msg || 'Greška pri prijavi'
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
+}
 </script>
