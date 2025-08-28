@@ -108,6 +108,7 @@ async function onSubmit() {
     success.value = true
     console.log('Uspijesna prijava1')
     setTimeout(() => router.push('/home'), 200)
+    console.log(`prijavljeni ste kao ${form.email}`)
   } catch (e: any) {
     error.value = e?.response?.data?.msg || 'Greška pri prijavi'
     console.error(e)

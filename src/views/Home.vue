@@ -1,5 +1,9 @@
 <template>
-  <div id="Home"></div>
-  Radi sve
+  <div class="p-6">
+    <Table />
+  </div>
 </template>
-<script lang="ts"></script>
+
+<script setup lang="ts">
+import Table from '@/components/Table.vue'
+</script>
