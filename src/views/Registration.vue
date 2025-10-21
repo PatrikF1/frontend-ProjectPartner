@@ -89,10 +89,10 @@
         <div>
           <button
             type="submit"
-            :disabled="loading"
+            :disabled="authStore.isLoading"
             class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-60"
           >
-            {{ loading ? 'Signing up…' : 'Sign up' }}
+            {{ authStore.isLoading ? 'Signing up…' : 'Sign up' }}
           </button>
         </div>
       </form>
@@ -110,20 +110,13 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { backend } from '@/services/backend'
+import { useAuthStore } from '@/stores/auth'
+import { register } from '@/services/users'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
-type RegisterForm = {
-  name: string
-  lastname: string
-  email: string
-  phone: string
-  password: string
-  c_password: string
-}
-
-const form = reactive<RegisterForm>({
+const form = reactive({
   name: '',
   lastname: '',
   email: '',
@@ -131,22 +124,14 @@ const form = reactive<RegisterForm>({
   password: '',
   c_password: '',
 })
-const loading = ref(false)
-const error = ref<string | null>(null)
+
+const error = ref(null)
 const success = ref(false)
 
 async function onSubmit() {
   error.value = null
-  if (!form.name || !form.lastname || !form.email || !form.password || !form.c_password) {
-    error.value = 'Sva obavezna polja su obavezna'
-    return
-  }
-  if (form.password !== form.c_password) {
-    error.value = 'Lozinke se ne podudaraju'
-    return
-  }
 
-  loading.value = true
+  authStore.setLoading(true)
   try {
     const payload = {
       name: form.name.trim(),
@@ -156,15 +141,21 @@ async function onSubmit() {
       password: form.password,
       c_password: form.c_password,
     }
-    await backend.post('/api/auth/register', payload)
+
+    const response = await register(payload)
+
+    authStore.setUser(response)
+
     success.value = true
-    console.log('Uspijesna prijava')
-    setTimeout(() => router.push('/login'), 200)
+    console.log('Uspješna registracija!')
+    console.log(`Registrirani ste kao ${response.name} ${response.lastname}`)
+
+    setTimeout(() => router.push('/home'), 200)
   } catch (e: any) {
     error.value = e?.response?.data?.msg || 'Greška pri registraciji'
     console.error(e)
   } finally {
-    loading.value = false
+    authStore.setLoading(false)
   }
 }
 </script>

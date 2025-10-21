@@ -50,12 +50,16 @@
           </div>
         </div>
 
+        <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
+        <p v-if="success" class="text-sm text-green-400">Successfully signed in! Redirecting...</p>
+
         <div>
           <button
             type="submit"
-            class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            :disabled="authStore.isLoading"
+            class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-60"
           >
-            Sign in
+            {{ authStore.isLoading ? 'Signing in...' : 'Sign in' }}
           </button>
         </div>
       </form>
@@ -73,47 +77,44 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
-import { backend } from '@/services/backend'
+import { useAuthStore } from '@/stores/auth'
+import { login } from '@/services/users'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
-type LoginForm = {
-  email: string
-  password: string
-}
-
-const form = reactive<LoginForm>({
+const form = reactive({
   email: '',
   password: '',
 })
 
-const loading = ref(false)
-const error = ref<string | null>(null)
+const error = ref(null)
 const success = ref(false)
 
 async function onSubmit() {
   error.value = null
-  if (!form.email || !form.password) {
-    error.value = 'Sva obavezna polja su obavezna'
-    return
-  }
 
-  loading.value = true
+  authStore.setLoading(true)
   try {
     const payload = {
       email: form.email.trim().toLowerCase(),
       password: form.password,
     }
-    await backend.post('/api/auth/login', payload)
+
+    const response = await login(payload)
+
+    authStore.setUser(response)
+
     success.value = true
-    console.log('Uspijesna prijava1')
+    console.log('Uspješna prijava!')
+    console.log(`Prijavljeni ste kao ${response.name} ${response.lastname}`)
+
     setTimeout(() => router.push('/home'), 200)
-    console.log(`prijavljeni ste kao ${form.email}`)
   } catch (e: any) {
     error.value = e?.response?.data?.msg || 'Greška pri prijavi'
     console.error(e)
   } finally {
-    loading.value = false
+    authStore.setLoading(false)
   }
 }
 </script>
