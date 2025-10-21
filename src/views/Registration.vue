@@ -83,6 +83,16 @@
           />
         </div>
 
+        <div class="flex items-center">
+          <input
+            v-model="form.isAdmin"
+            type="checkbox"
+            id="isAdmin"
+            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          <label for="isAdmin" class="ml-2 block text-sm text-gray-100"> Register as admin </label>
+        </div>
+
         <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
         <p v-if="success" class="text-sm text-green-400">Account created! Redirecting…</p>
 
@@ -107,7 +117,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -123,6 +133,7 @@ const form = reactive({
   phone: '',
   password: '',
   c_password: '',
+  isAdmin: false,
 })
 
 const error = ref(null)
@@ -140,18 +151,20 @@ async function onSubmit() {
       phone: form.phone ? Number(form.phone.replace(/\D/g, '')) : undefined,
       password: form.password,
       c_password: form.c_password,
+      isAdmin: form.isAdmin,
     }
 
     const response = await register(payload)
 
     authStore.setUser(response)
+    authStore.setToken(response.token)
 
     success.value = true
     console.log('Uspješna registracija!')
     console.log(`Registrirani ste kao ${response.name} ${response.lastname}`)
 
-    setTimeout(() => router.push('/home'), 200)
-  } catch (e: any) {
+    setTimeout(() => router.push('/dashboard'), 200)
+  } catch (e) {
     error.value = e?.response?.data?.msg || 'Greška pri registraciji'
     console.error(e)
   } finally {

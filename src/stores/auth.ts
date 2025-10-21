@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const token = ref(localStorage.getItem('token'))
   const isLoading = ref(false)
 
@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setUser(userData: any) {
     user.value = userData
+    localStorage.setItem('user', JSON.stringify(userData))
   }
 
   function setToken(tokenValue: any) {
@@ -21,6 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = null
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('spaces')
   }
 
   function setLoading(loading: any) {

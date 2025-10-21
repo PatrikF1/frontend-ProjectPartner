@@ -66,16 +66,16 @@
 
       <p class="mt-8 text-center text-sm/6 text-gray-400">
         Don't have an account?
-        <RouterLink to="/login" class="font-semibold text-indigo-400 hover:text-indigo-300">
-          Sign in
+        <RouterLink to="/registration" class="font-semibold text-indigo-400 hover:text-indigo-300">
+          Sign up
         </RouterLink>
       </p>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { useRouter } from 'vue-router'
+<script setup>
+import { useRouter, RouterLink } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { login } from '@/services/users'
@@ -104,13 +104,14 @@ async function onSubmit() {
     const response = await login(payload)
 
     authStore.setUser(response)
+    authStore.setToken(response.token)
 
     success.value = true
     console.log('Uspješna prijava!')
     console.log(`Prijavljeni ste kao ${response.name} ${response.lastname}`)
 
-    setTimeout(() => router.push('/home'), 200)
-  } catch (e: any) {
+    setTimeout(() => router.push('/dashboard'), 200)
+  } catch (e) {
     error.value = e?.response?.data?.msg || 'Greška pri prijavi'
     console.error(e)
   } finally {
