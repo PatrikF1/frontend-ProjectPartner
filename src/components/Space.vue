@@ -65,19 +65,28 @@
               <p class="text-gray-400 text-xs">
                 {{ formatDate(space.createdAt) }} by {{ space.createdBy?.name }}
               </p>
-              <div class="mt-2 flex space-x-2">
-                <span class="px-2 py-1 bg-indigo-600 text-white text-xs rounded-full">{{
-                  space.type
-                }}</span>
-                <span
-                  v-if="space.capacity"
-                  class="px-2 py-1 bg-green-600 text-white text-xs rounded-full"
-                >
-                  {{ space.capacity }}
-                </span>
-                <span class="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
-                  {{ space.members?.length || 0 }} members
-                </span>
+              <div class="mt-2">
+                <div class="flex space-x-3 mb-2">
+                  <span class="text-indigo-400 text-xs">{{ space.type }}</span>
+                  <span v-if="space.capacity" class="text-green-400 text-xs">
+                    Capacity: {{ space.capacity }}
+                  </span>
+                  <span class="text-blue-400 text-xs">
+                    Members: {{ space.members?.length || 0 }}
+                  </span>
+                </div>
+                <div v-if="isAdmin && space.members?.length > 0">
+                  <p class="text-gray-300 text-xs font-semibold mb-1">Members:</p>
+                  <div class="space-y-0.5">
+                    <div
+                      v-for="member in space.members"
+                      :key="member._id"
+                      class="text-gray-400 text-xs"
+                    >
+                      {{ member.email }}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="flex space-x-2">
