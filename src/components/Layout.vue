@@ -192,7 +192,7 @@ const user = {
 const navigation = computed(() => [
   { name: 'Dashboard', href: '/dashboard', current: route.path === '/dashboard' },
   { name: 'Team', href: '/team', current: route.path === '/team' },
-  { name: 'Projects', href: '/projects', current: route.path === '/projects' },
+  { name: 'Spaces', href: '/spaces', current: route.path === '/spaces' },
   { name: 'Calendar', href: '/calendar', current: route.path === '/calendar' },
   { name: 'Reports', href: '/reports', current: route.path === '/reports' },
 ])

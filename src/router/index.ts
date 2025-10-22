@@ -4,7 +4,7 @@ import Login from '../views/Login.vue'
 import Registration from '../views/Registration.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Team from '../views/Team.vue'
-import Projects from '../views/Projects.vue'
+import Spaces from '../views/Spaces.vue'
 import Calendar from '../views/Calendar.vue'
 import Reports from '../views/Reports.vue'
 
@@ -41,9 +41,9 @@ const router = createRouter({
       component: Team,
     },
     {
-      path: '/projects',
-      name: 'projects',
-      component: Projects,
+      path: '/spaces',
+      name: 'spaces',
+      component: Spaces,
     },
     {
       path: '/calendar',
