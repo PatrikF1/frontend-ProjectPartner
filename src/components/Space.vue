@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-6">
-    <div class="bg-gray-700 rounded-lg p-6">
+    <!-- Admin forma za kreiranje space-a -->
+    <div v-if="isAdmin" class="bg-gray-700 rounded-lg p-6">
       <h3 class="text-lg font-medium text-white mb-4">Create New Space</h3>
 
       <form @submit.prevent="createSpace" class="space-y-4">
@@ -54,7 +55,7 @@
     </div>
 
     <div v-if="spaces.length > 0" class="bg-gray-700 rounded-lg p-6">
-      <h3 class="text-lg font-medium text-white mb-4">Your Spaces</h3>
+      <h3 class="text-lg font-medium text-white mb-4">Available Spaces</h3>
       <div class="space-y-4">
         <div v-for="space in spaces" :key="space._id" class="bg-gray-600 rounded-lg p-4">
           <div class="flex justify-between items-start">
@@ -74,16 +75,35 @@
                 >
                   {{ space.capacity }}
                 </span>
+                <span class="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
+                  {{ space.members?.length || 0 }} members
+                </span>
               </div>
             </div>
             <div class="flex space-x-2">
               <button
+                v-if="!isJoined(space) && !isAdmin"
+                @click="joinSpace(space._id)"
+                class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
+              >
+                Join
+              </button>
+              <button
+                v-if="isJoined(space) && !isAdmin"
+                @click="leaveSpace(space._id)"
+                class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+              >
+                Leave
+              </button>
+              <button
+                v-if="isAdmin"
                 @click="editSpace(space)"
                 class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
               >
                 Edit
               </button>
               <button
+                v-if="isAdmin"
                 @click="deleteSpace(space._id)"
                 class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
               >
@@ -158,7 +178,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 
@@ -168,6 +188,10 @@ const loading = ref(false)
 const error = ref('')
 const success = ref(false)
 const editingSpace = ref(null)
+
+const isAdmin = computed(() => {
+  return authStore.user?.isAdmin === true || authStore.user?.isAdmin === 'true'
+})
 
 const form = reactive({
   name: '',
@@ -227,11 +251,69 @@ async function loadSpaces() {
 }
 
 function editSpace(space) {
-  editingSpace.value = { ...space }
+  editingSpace.value = {
+    _id: space._id,
+    name: space.name,
+    description: space.description,
+    type: space.type,
+    capacity: space.capacity,
+  }
 }
 
 function cancelEdit() {
   editingSpace.value = null
+}
+
+function isJoined(space) {
+  return space.members?.some((member) => member._id === authStore.user?._id)
+}
+
+async function joinSpace(spaceId) {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await backend.post(
+      `/api/spaces/${spaceId}/join`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${authStore.token}` },
+      },
+    )
+
+    const index = spaces.value.findIndex((space) => space._id === spaceId)
+    spaces.value[index] = response.data
+
+    success.value = true
+    setTimeout(() => (success.value = false), 2000)
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error joining space'
+  }
+  loading.value = false
+}
+
+async function leaveSpace(spaceId) {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await backend.post(
+      `/api/spaces/${spaceId}/leave`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${authStore.token}` },
+      },
+    )
+
+    const index = spaces.value.findIndex((space) => space._id === spaceId)
+    spaces.value[index] = response.data
+
+    success.value = true
+    setTimeout(() => (success.value = false), 2000)
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error leaving space'
+  }
+  loading.value = false
 }
 
 async function updateSpace() {
