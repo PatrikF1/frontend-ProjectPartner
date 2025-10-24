@@ -78,7 +78,6 @@
 import { useRouter, RouterLink } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { login } from '@/services/users'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -101,7 +100,7 @@ async function onSubmit() {
       password: form.password,
     }
 
-    const response = await login(payload)
+    const response = await authStore.login(payload)
 
     authStore.setUser(response)
     authStore.setToken(response.token)

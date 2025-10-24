@@ -121,7 +121,6 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { register } from '@/services/users'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -154,7 +153,7 @@ async function onSubmit() {
       isAdmin: form.isAdmin,
     }
 
-    const response = await register(payload)
+    const response = await authStore.register(payload)
 
     authStore.setUser(response)
     authStore.setToken(response.token)
