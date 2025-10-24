@@ -2,16 +2,16 @@
   <Layout>
     <div class="min-h-screen p-6 space-y-6">
       <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Create New Space</h2>
-        <p class="text-gray-300 mb-6">Create a new space for collaboration.</p>
+        <h2 class="text-xl font-semibold text-white mb-4">Create New Project</h2>
+        <p class="text-gray-300 mb-6">Create a new project for collaboration.</p>
 
-        <form @submit.prevent="createSpace" class="space-y-4">
+        <form @submit.prevent="createProject" class="space-y-4">
           <input
             v-model="form.name"
             type="text"
             required
             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Space Name"
+            placeholder="Project Name"
           />
 
           <textarea
@@ -50,56 +50,61 @@
             :disabled="loading"
             class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
           >
-            {{ loading ? 'Creating...' : 'Create Space' }}
+            {{ loading ? 'Creating...' : 'Create Project' }}
           </button>
         </form>
       </div>
 
       <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Available Spaces</h2>
-        <p class="text-gray-300 mb-6">
-          Browse and join available spaces to collaborate on projects.
-        </p>
+        <h2 class="text-xl font-semibold text-white mb-4">Available Projects</h2>
+        <p class="text-gray-300 mb-6">Browse and join available projects to collaborate.</p>
 
-        <div v-if="loading" class="text-center text-gray-400">Loading spaces...</div>
+        <div v-if="loading" class="text-center text-gray-400">Loading projects...</div>
 
-        <div v-else-if="spaces.length === 0" class="text-center text-gray-400">
-          No spaces available yet.
+        <div v-else-if="projects.length === 0" class="text-center text-gray-400">
+          No projects available yet.
         </div>
 
         <div v-else class="space-y-4">
           <div
-            v-for="space in spaces"
-            :key="space._id"
+            v-for="project in projects"
+            :key="project._id"
             class="bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500"
           >
             <div class="flex justify-between items-start mb-3">
-              <h3 class="text-lg font-medium text-white">{{ space.name }}</h3>
+              <h3 class="text-lg font-medium text-white">{{ project.name }}</h3>
               <div class="flex space-x-2">
                 <button
-                  v-if="!isJoined(space) && !isAdmin"
-                  @click="joinSpace(space._id)"
+                  v-if="!isJoined(project) && !isAdmin"
+                  @click="joinProject(project._id)"
                   class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
                 >
                   Join
                 </button>
                 <button
-                  v-if="isJoined(space) && !isAdmin"
-                  @click="leaveSpace(space._id)"
+                  v-if="isJoined(project) && !isAdmin"
+                  @click="applyToProject(project._id)"
+                  class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700"
+                >
+                  Apply
+                </button>
+                <button
+                  v-if="isJoined(project) && !isAdmin"
+                  @click="leaveProject(project._id)"
                   class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
                 >
                   Leave
                 </button>
                 <button
                   v-if="isAdmin"
-                  @click="editSpace(space)"
+                  @click="editProject(project)"
                   class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
                 >
                   Edit
                 </button>
                 <button
                   v-if="isAdmin"
-                  @click="deleteSpace(space._id)"
+                  @click="deleteProject(project._id)"
                   class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
                 >
                   Delete
@@ -107,21 +112,21 @@
               </div>
             </div>
 
-            <p class="text-gray-300 text-sm mb-3">{{ space.description }}</p>
+            <p class="text-gray-300 text-sm mb-3">{{ project.description }}</p>
 
             <div class="flex items-center space-x-4 text-sm text-gray-400">
-              <span class="text-indigo-400">{{ space.type }}</span>
-              <span v-if="space.capacity" class="text-green-400">
-                Capacity: {{ space.capacity }}
+              <span class="text-indigo-400">{{ project.type }}</span>
+              <span v-if="project.capacity" class="text-green-400">
+                Capacity: {{ project.capacity }}
               </span>
-              <span class="text-blue-400"> Members: {{ space.members?.length || 0 }} </span>
+              <span class="text-blue-400"> Members: {{ project.members?.length || 0 }} </span>
             </div>
 
-            <div v-if="isAdmin && space.members?.length > 0" class="mt-3">
+            <div v-if="isAdmin && project.members?.length > 0" class="mt-3">
               <p class="text-gray-300 text-xs font-semibold mb-1">Members:</p>
               <div class="space-y-0.5">
                 <div
-                  v-for="member in space.members"
+                  v-for="member in project.members"
                   :key="member._id"
                   class="text-gray-400 text-xs"
                 >
@@ -131,36 +136,36 @@
             </div>
 
             <div class="mt-3 text-xs text-gray-500">
-              Created: {{ formatDate(space.createdAt) }} by {{ space.createdBy?.name }}
+              Created: {{ formatDate(project.createdAt) }} by {{ project.createdBy?.name }}
             </div>
           </div>
         </div>
       </div>
 
       <div
-        v-if="editingSpace"
+        v-if="editingProject"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
         <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-          <h3 class="text-lg font-medium text-white mb-4">Edit Space</h3>
+          <h3 class="text-lg font-medium text-white mb-4">Edit Project</h3>
 
-          <form @submit.prevent="updateSpace" class="space-y-4">
+          <form @submit.prevent="updateProject" class="space-y-4">
             <input
-              v-model="editingSpace.name"
+              v-model="editingProject.name"
               type="text"
               required
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
             <textarea
-              v-model="editingSpace.description"
+              v-model="editingProject.description"
               rows="3"
               required
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             ></textarea>
 
             <select
-              v-model="editingSpace.type"
+              v-model="editingProject.type"
               required
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
@@ -171,7 +176,7 @@
             </select>
 
             <input
-              v-model="editingSpace.capacity"
+              v-model="editingProject.capacity"
               type="number"
               min="1"
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -210,11 +215,11 @@ import Layout from '@/components/Layout.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const spaces = ref([])
+const projects = ref([])
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
-const editingSpace = ref(null)
+const editingProject = ref(null)
 
 const isAdmin = computed(() => {
   return authStore.user?.isAdmin === true || authStore.user?.isAdmin === 'true'
@@ -231,23 +236,23 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString()
 }
 
-function isJoined(space) {
-  return space.members?.some((member) => member._id === authStore.user?._id)
+function isJoined(project) {
+  return project.members?.some((member) => member._id === authStore.user?._id)
 }
 
-async function createSpace() {
+async function createProject() {
   loading.value = true
   error.value = ''
 
   try {
-    const response = await backend.post('/api/spaces', {
+    const response = await backend.post('/api/projects', {
       name: form.name,
       description: form.description,
       type: form.type,
       capacity: form.capacity,
     })
 
-    spaces.value.push(response.data)
+    projects.value.push(response.data)
     form.name = ''
     form.description = ''
     form.type = ''
@@ -260,85 +265,106 @@ async function createSpace() {
   loading.value = false
 }
 
-async function loadSpaces() {
+async function loadProjects() {
   loading.value = true
   error.value = ''
 
   try {
-    const response = await backend.get('/api/spaces')
-    spaces.value = response.data
+    const response = await backend.get('/api/projects')
+    projects.value = response.data
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
 
-function editSpace(space) {
-  editingSpace.value = {
-    _id: space._id,
-    name: space.name,
-    description: space.description,
-    type: space.type,
-    capacity: space.capacity,
+function editProject(project) {
+  editingProject.value = {
+    _id: project._id,
+    name: project.name,
+    description: project.description,
+    type: project.type,
+    capacity: project.capacity,
   }
 }
 
 function cancelEdit() {
-  editingSpace.value = null
+  editingProject.value = null
 }
 
-async function joinSpace(spaceId) {
+async function applyToProject(projectId) {
   loading.value = true
   error.value = ''
 
   try {
-    const response = await backend.post(`/api/spaces/${spaceId}/join`, {})
-
-    const index = spaces.value.findIndex((space) => space._id === spaceId)
-    spaces.value[index] = response.data
-
-    success.value = true
-    setTimeout(() => (success.value = false), 2000)
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error joining space'
-  }
-  loading.value = false
-}
-
-async function leaveSpace(spaceId) {
-  loading.value = true
-  error.value = ''
-
-  try {
-    const response = await backend.post(`/api/spaces/${spaceId}/leave`, {})
-
-    const index = spaces.value.findIndex((space) => space._id === spaceId)
-    spaces.value[index] = response.data
-
-    success.value = true
-    setTimeout(() => (success.value = false), 2000)
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error leaving space'
-  }
-  loading.value = false
-}
-
-async function updateSpace() {
-  loading.value = true
-  error.value = ''
-
-  try {
-    const response = await backend.put(`/api/spaces/${editingSpace.value._id}`, {
-      name: editingSpace.value.name,
-      description: editingSpace.value.description,
-      type: editingSpace.value.type,
-      capacity: editingSpace.value.capacity,
+    const response = await backend.post(`/api/projects/${projectId}/apply`, {
+      message: 'I would like to join this project',
     })
 
-    const index = spaces.value.findIndex((space) => space._id === editingSpace.value._id)
-    spaces.value[index] = response.data
+    success.value = true
+    setTimeout(() => (success.value = false), 2000)
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error applying to project'
+  }
+  loading.value = false
+}
 
-    editingSpace.value = null
+async function joinProject(projectId) {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await backend.post(`/api/projects/${projectId}/join`, {})
+
+    await loadProjects()
+
+    success.value = true
+    setTimeout(() => (success.value = false), 2000)
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error joining project'
+  }
+  loading.value = false
+}
+
+async function leaveProject(projectId) {
+  loading.value = true
+  error.value = ''
+
+  try {
+    console.log('Napuštanje projekta:', projectId)
+    const response = await backend.post(`/api/projects/${projectId}/leave`, {})
+    console.log('Odgovor:', response.data)
+
+    const index = projects.value.findIndex((project) => project._id === projectId)
+    if (index !== -1) {
+      projects.value[index] = response.data
+    }
+
+    success.value = true
+    setTimeout(() => (success.value = false), 2000)
+  } catch (e) {
+    console.error('Greška:', e)
+    error.value = e?.response?.data?.msg || 'Error leaving project'
+  }
+  loading.value = false
+}
+
+async function updateProject() {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await backend.put(`/api/projects/${editingProject.value._id}`, {
+      name: editingProject.value.name,
+      description: editingProject.value.description,
+      type: editingProject.value.type,
+      capacity: editingProject.value.capacity,
+    })
+
+    const index = projects.value.findIndex((project) => project._id === editingProject.value._id)
+    projects.value[index] = response.data
+
+    editingProject.value = null
     success.value = true
     setTimeout(() => (success.value = false), 2000)
   } catch (e) {
@@ -347,16 +373,16 @@ async function updateSpace() {
   loading.value = false
 }
 
-async function deleteSpace(spaceId) {
-  if (confirm('Delete this space?')) {
+async function deleteProject(projectId) {
+  if (confirm('Delete this project?')) {
     loading.value = true
     error.value = ''
 
     try {
-      await backend.delete(`/api/spaces/${spaceId}`)
+      await backend.delete(`/api/projects/${projectId}`)
 
-      const index = spaces.value.findIndex((space) => space._id === spaceId)
-      spaces.value.splice(index, 1)
+      const index = projects.value.findIndex((project) => project._id === projectId)
+      projects.value.splice(index, 1)
 
       success.value = true
       setTimeout(() => (success.value = false), 2000)
@@ -368,6 +394,6 @@ async function deleteSpace(spaceId) {
 }
 
 onMounted(() => {
-  loadSpaces()
+  loadProjects()
 })
 </script>
