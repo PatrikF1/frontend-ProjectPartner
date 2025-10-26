@@ -83,13 +83,6 @@
                 </button>
                 <button
                   v-if="isJoined(project) && !isAdmin"
-                  @click="applyToProject(project._id)"
-                  class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700"
-                >
-                  Apply
-                </button>
-                <button
-                  v-if="isJoined(project) && !isAdmin"
                   @click="leaveProject(project._id)"
                   class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
                 >
@@ -207,22 +200,22 @@
 
 <script setup>
 import { reactive, ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 
 const projects = ref([])
 const loading = ref(false)
-const error = ref('')
+const error = ref(null)
 const success = ref(false)
 const editingProject = ref(null)
 
 const isAdmin = computed(() => {
-  return authStore.user?.isAdmin === true || authStore.user?.isAdmin === 'true'
+  if (authStore.user?.isAdmin === true) return true
+  if (authStore.user?.isAdmin === 'true') return true
+  return false
 })
 
 const form = reactive({
@@ -233,16 +226,23 @@ const form = reactive({
 })
 
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString()
+  const date = new Date(dateString)
+  return date.toLocaleDateString()
 }
 
 function isJoined(project) {
-  return project.members?.some((member) => member._id === authStore.user?._id)
+  if (!project.members) return false
+  for (let i = 0; i < project.members.length; i++) {
+    if (project.members[i]._id === authStore.user?._id) {
+      return true
+    }
+  }
+  return false
 }
 
 async function createProject() {
   loading.value = true
-  error.value = ''
+  error.value = null
 
   try {
     const response = await backend.post('/api/projects', {
@@ -257,23 +257,28 @@ async function createProject() {
     form.description = ''
     form.type = ''
     form.capacity = ''
+
     success.value = true
-    setTimeout(() => (success.value = false), 2000)
+    setTimeout(() => {
+      success.value = false
+    }, 2000)
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
+    console.error(e)
   }
   loading.value = false
 }
 
 async function loadProjects() {
   loading.value = true
-  error.value = ''
+  error.value = null
 
   try {
     const response = await backend.get('/api/projects')
     projects.value = response.data
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    error.value = e?.response?.data?.msg || 'Greška'
+    console.error(e)
   }
   loading.value = false
 }
@@ -292,35 +297,19 @@ function cancelEdit() {
   editingProject.value = null
 }
 
-async function applyToProject(projectId) {
-  loading.value = true
-  error.value = ''
-
-  try {
-    const response = await backend.post(`/api/projects/${projectId}/apply`, {
-      message: 'I would like to join this project',
-    })
-
-    success.value = true
-    setTimeout(() => (success.value = false), 2000)
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error applying to project'
-  }
-  loading.value = false
-}
-
 async function joinProject(projectId) {
   loading.value = true
-  error.value = ''
+  error.value = null
 
   try {
-    const response = await backend.post(`/api/projects/${projectId}/join`, {})
-
+    await backend.post(`/api/projects/${projectId}/join`, {})
     await loadProjects()
-
     success.value = true
-    setTimeout(() => (success.value = false), 2000)
+    setTimeout(() => {
+      success.value = false
+    }, 2000)
   } catch (e) {
+    console.error('Error joining project:', e)
     error.value = e?.response?.data?.msg || 'Error joining project'
   }
   loading.value = false
@@ -328,22 +317,20 @@ async function joinProject(projectId) {
 
 async function leaveProject(projectId) {
   loading.value = true
-  error.value = ''
+  error.value = null
 
   try {
-    console.log('Napuštanje projekta:', projectId)
     const response = await backend.post(`/api/projects/${projectId}/leave`, {})
-    console.log('Odgovor:', response.data)
-
     const index = projects.value.findIndex((project) => project._id === projectId)
     if (index !== -1) {
       projects.value[index] = response.data
     }
-
     success.value = true
-    setTimeout(() => (success.value = false), 2000)
+    setTimeout(() => {
+      success.value = false
+    }, 2000)
   } catch (e) {
-    console.error('Greška:', e)
+    console.error('Error leaving project:', e)
     error.value = e?.response?.data?.msg || 'Error leaving project'
   }
   loading.value = false
@@ -351,7 +338,7 @@ async function leaveProject(projectId) {
 
 async function updateProject() {
   loading.value = true
-  error.value = ''
+  error.value = null
 
   try {
     const response = await backend.put(`/api/projects/${editingProject.value._id}`, {
@@ -360,37 +347,40 @@ async function updateProject() {
       type: editingProject.value.type,
       capacity: editingProject.value.capacity,
     })
-
     const index = projects.value.findIndex((project) => project._id === editingProject.value._id)
     projects.value[index] = response.data
-
     editingProject.value = null
     success.value = true
-    setTimeout(() => (success.value = false), 2000)
+    setTimeout(() => {
+      success.value = false
+    }, 2000)
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    console.error('Error updating project:', e)
+    error.value = e?.response?.data?.msg || 'Error updating project'
   }
   loading.value = false
 }
 
 async function deleteProject(projectId) {
-  if (confirm('Delete this project?')) {
-    loading.value = true
-    error.value = ''
-
-    try {
-      await backend.delete(`/api/projects/${projectId}`)
-
-      const index = projects.value.findIndex((project) => project._id === projectId)
-      projects.value.splice(index, 1)
-
-      success.value = true
-      setTimeout(() => (success.value = false), 2000)
-    } catch (e) {
-      error.value = e?.response?.data?.msg || 'Error'
-    }
-    loading.value = false
+  if (!confirm('Delete this project?')) {
+    return
   }
+  loading.value = true
+  error.value = null
+
+  try {
+    await backend.delete(`/api/projects/${projectId}`)
+    const index = projects.value.findIndex((project) => project._id === projectId)
+    projects.value.splice(index, 1)
+    success.value = true
+    setTimeout(() => {
+      success.value = false
+    }, 2000)
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error'
+    console.error(e)
+  }
+  loading.value = false
 }
 
 onMounted(() => {
