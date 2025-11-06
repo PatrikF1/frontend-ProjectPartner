@@ -1,182 +1,171 @@
 <template>
-  <div class="min-h-full bg-gray-900">
-    <Disclosure as="nav" class="bg-gray-800/50" v-slot="{ open }">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
-          <div class="flex items-center">
-            <div class="shrink-0">
-              <img
-                class="size-8"
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
-            </div>
-            <div class="hidden md:block">
-              <div class="ml-10 flex items-baseline space-x-4">
-                <button
-                  v-for="item in navigation"
-                  :key="item.name"
-                  @click="navigateTo(item.href)"
-                  :class="[
-                    item.current
-                      ? 'bg-gray-950/50 text-white'
-                      : 'text-gray-300 hover:bg-white/5 hover:text-white',
-                    'rounded-md px-3 py-2 text-sm font-medium',
-                  ]"
-                  :aria-current="item.current ? 'page' : undefined"
-                >
-                  {{ item.name }}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="hidden md:block">
-            <div class="ml-4 flex items-center md:ml-6">
-              <button
-                type="button"
-                class="relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
-              >
-                <span class="absolute -inset-1.5" />
-                <span class="sr-only">View notifications</span>
-                <BellIcon class="size-6" aria-hidden="true" />
-              </button>
-
-              <!-- Profile dropdown -->
-              <Menu as="div" class="relative ml-3">
-                <MenuButton
-                  class="relative flex max-w-xs items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                >
-                  <span class="absolute -inset-1.5" />
-                  <span class="sr-only">Open user menu</span>
-                  <img
-                    class="size-8 rounded-full outline -outline-offset-1 outline-white/10"
-                    :src="user.imageUrl"
-                    alt=""
-                  />
-                </MenuButton>
-
-                <transition
-                  enter-active-class="transition ease-out duration-100"
-                  enter-from-class="transform opacity-0 scale-95"
-                  enter-to-class="transform scale-100"
-                  leave-active-class="transition ease-in duration-75"
-                  leave-from-class="transform scale-100"
-                  leave-to-class="transform opacity-0 scale-95"
-                >
-                  <MenuItems
-                    class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 outline-1 -outline-offset-1 outline-white/10"
-                  >
-                    <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
-                      <button
-                        @click="handleUserAction(item)"
-                        :class="[
-                          active ? 'bg-white/5 outline-hidden' : '',
-                          'block w-full text-left px-4 py-2 text-sm text-gray-300',
-                        ]"
-                      >
-                        {{ item.name }}
-                      </button>
-                    </MenuItem>
-                  </MenuItems>
-                </transition>
-              </Menu>
-            </div>
-          </div>
-          <div class="-mr-2 flex md:hidden">
-            <!-- Mobile menu button -->
-            <DisclosureButton
-              class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
-            >
-              <span class="absolute -inset-0.5" />
-              <span class="sr-only">Open main menu</span>
-              <Bars3Icon v-if="!open" class="block size-6" aria-hidden="true" />
-              <XMarkIcon v-else class="block size-6" aria-hidden="true" />
-            </DisclosureButton>
-          </div>
+  <div class="h-screen bg-gray-900 flex overflow-hidden">
+    <div class="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:flex-col">
+      <div class="flex flex-col flex-grow bg-gray-800 border-r border-gray-700 overflow-y-auto">
+        <div class="flex items-center flex-shrink-0 px-6 py-4 border-b border-gray-700">
+          <h1 class="text-xl font-bold text-white">ProjectPartner</h1>
         </div>
-      </div>
-
-      <DisclosurePanel class="md:hidden">
-        <div class="space-y-1 px-2 pt-2 pb-3 sm:px-3">
-          <DisclosureButton
+        <nav class="flex-1 px-3 py-4 space-y-1">
+          <button
             v-for="item in navigation"
             :key="item.name"
             @click="navigateTo(item.href)"
             :class="[
               item.current
-                ? 'bg-gray-950/50 text-white'
-                : 'text-gray-300 hover:bg-white/5 hover:text-white',
-              'block rounded-md px-3 py-2 text-base font-medium',
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+              'group flex items-center px-3 py-2 text-sm font-medium rounded-md w-full',
             ]"
-            :aria-current="item.current ? 'page' : undefined"
-            >{{ item.name }}</DisclosureButton
           >
-        </div>
-        <div class="border-t border-white/10 pt-4 pb-3">
-          <div class="flex items-center px-5">
-            <div class="shrink-0">
-              <img
-                class="size-10 rounded-full outline -outline-offset-1 outline-white/10"
-                :src="user.imageUrl"
-                alt=""
-              />
-            </div>
-            <div class="ml-3">
-              <div class="text-base/5 font-medium text-white">{{ user.name }}</div>
-              <div class="text-sm font-medium text-gray-400">{{ user.email }}</div>
-            </div>
-            <button
-              type="button"
-              class="relative ml-auto shrink-0 rounded-full p-1 text-gray-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
+            <component :is="item.icon" class="mr-3 h-5 w-5" />
+            <span class="flex-1">{{ item.name }}</span>
+            <span
+              v-if="item.badge"
+              class="ml-3 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-600 text-gray-300"
             >
-              <span class="absolute -inset-1.5" />
-              <span class="sr-only">View notifications</span>
-              <BellIcon class="size-6" aria-hidden="true" />
+              {{ item.badge }}
+            </span>
+          </button>
+        </nav>
+
+        <div class="px-6 py-4 border-t border-gray-700">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            Your teams
+          </p>
+          <div class="space-y-2">
+            <div
+              v-for="team in teams"
+              :key="team.name"
+              class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md cursor-pointer"
+            >
+              <div
+                class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-medium text-white mr-3"
+              >
+                {{ team.initial }}
+              </div>
+              <span>{{ team.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-shrink-0 flex flex-col border-t border-gray-700 p-4">
+          <div class="flex items-center w-full mb-3">
+            <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
+            <div class="ml-3 flex-1">
+              <p class="text-sm font-medium text-white">{{ user.name }}</p>
+            </div>
+          </div>
+          <button
+            @click="handleLogout"
+            class="w-full px-3 py-2 text-sm font-medium text-gray-300 bg-gray-700 rounded-md hover:bg-gray-600 hover:text-white"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div class="h-16 bg-gray-800 border-b border-gray-700 flex items-center px-4 sm:px-6">
+        <button
+          @click="mobileMenuOpen = !mobileMenuOpen"
+          class="lg:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700"
+        >
+          <Bars3Icon v-if="!mobileMenuOpen" class="h-6 w-6" />
+          <XMarkIcon v-else class="h-6 w-6" />
+        </button>
+      </div>
+
+      <div v-if="mobileMenuOpen" class="lg:hidden fixed inset-0 z-50 flex overflow-hidden">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="mobileMenuOpen = false"></div>
+        <div class="relative flex w-full max-w-xs flex-col bg-gray-800 h-full overflow-y-auto">
+          <div class="flex h-16 items-center justify-between px-6 border-b border-gray-700">
+            <h1 class="text-xl font-bold text-white">ProjectPartner</h1>
+            <button
+              @click="mobileMenuOpen = false"
+              class="p-2 rounded-md text-gray-400 hover:text-white"
+            >
+              <XMarkIcon class="h-6 w-6" />
             </button>
           </div>
-          <div class="mt-3 space-y-1 px-2">
-            <DisclosureButton
-              v-for="item in userNavigation"
+
+          <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <button
+              v-for="item in navigation"
               :key="item.name"
-              @click="handleUserAction(item)"
-              class="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
-              >{{ item.name }}</DisclosureButton
+              @click="handleMobileNav(item.href)"
+              :class="[
+                item.current
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                'group flex items-center px-3 py-2 text-sm font-medium rounded-md w-full',
+              ]"
             >
+              <component :is="item.icon" class="mr-3 h-5 w-5" />
+              <span class="flex-1">{{ item.name }}</span>
+            </button>
+          </nav>
+
+          <div class="px-6 py-4 border-t border-gray-700">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Your teams
+            </p>
+            <div class="space-y-2">
+              <div
+                v-for="team in teams"
+                :key="team.name"
+                class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md cursor-pointer"
+              >
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-medium text-white mr-3"
+                >
+                  {{ team.initial }}
+                </div>
+                <span>{{ team.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex-shrink-0 flex flex-col border-t border-gray-700 p-4">
+            <div class="flex items-center w-full mb-3">
+              <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
+              <div class="ml-3 flex-1">
+                <p class="text-sm font-medium text-white">{{ user.name }}</p>
+              </div>
+            </div>
+            <button
+              @click="handleLogout"
+              class="w-full px-3 py-2 text-sm font-medium text-gray-300 bg-gray-700 rounded-md hover:bg-gray-600 hover:text-white"
+            >
+              Logout
+            </button>
           </div>
         </div>
-      </DisclosurePanel>
-    </Disclosure>
-
-    <header
-      class="relative bg-gray-800 after:pointer-events-none after:absolute after:inset-x-0 after:inset-y-0 after:border-y after:border-white/10"
-    >
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold tracking-tight text-white">
-          {{ navigation.find((item) => item.current)?.name || 'Dashboard' }}
-        </h1>
       </div>
-    </header>
 
-    <main>
-      <slot />
-    </main>
+      <main class="flex-1 overflow-y-auto bg-gray-900 p-4 sm:p-6 max-w-full">
+        <div class="max-w-full overflow-x-hidden">
+          <slot />
+        </div>
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from '@headlessui/vue'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+  HomeIcon,
+  UserGroupIcon,
+  FolderIcon,
+  CalendarIcon,
+  ChartBarIcon,
+} from '@heroicons/vue/24/outline'
+
+const mobileMenuOpen = ref(false)
 
 const router = useRouter()
 const route = useRoute()
@@ -190,29 +179,54 @@ const user = {
 }
 
 const navigation = computed(() => [
-  { name: 'Dashboard', href: '/dashboard', current: route.path === '/dashboard' },
-  { name: 'Team', href: '/team', current: route.path === '/team' },
-  { name: 'Projects', href: '/projects', current: route.path === '/projects' },
-  { name: 'Calendar', href: '/calendar', current: route.path === '/calendar' },
-  { name: 'Reports', href: '/reports', current: route.path === '/reports' },
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: HomeIcon,
+    current: route.path === '/dashboard',
+  },
+  {
+    name: 'Team',
+    href: '/team',
+    icon: UserGroupIcon,
+    current: route.path === '/team',
+  },
+  {
+    name: 'Projects',
+    href: '/projects',
+    icon: FolderIcon,
+    current: route.path === '/projects',
+  },
+  {
+    name: 'Calendar',
+    href: '/calendar',
+    icon: CalendarIcon,
+    current: route.path === '/calendar',
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: ChartBarIcon,
+    current: route.path === '/reports',
+  },
 ])
 
-const userNavigation = [
-  { name: 'Your profile', href: '#', action: null },
-  { name: 'Settings', href: '#', action: null },
-  { name: 'Sign out', href: '#', action: 'signout' },
+const teams = [
+  { name: 'Tailwind Labs', initial: 'T' },
+  { name: 'Workcation', initial: 'W' },
 ]
 
 function navigateTo(href) {
   router.push(href)
 }
 
-function handleUserAction(item) {
-  if (item.action === 'signout') {
-    authStore.logout()
-    router.push('/login')
-  } else if (item.href && item.href !== '#') {
-    router.push(item.href)
-  }
+function handleMobileNav(href) {
+  navigateTo(href)
+  mobileMenuOpen.value = false
+}
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
 }
 </script>
