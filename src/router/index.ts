@@ -6,7 +6,7 @@ import Dashboard from '../views/Dashboard.vue'
 import Team from '../views/Team.vue'
 import Projects from '../views/Projects.vue'
 import Calendar from '../views/Calendar.vue'
-import Reports from '../views/Reports.vue'
+import Tasks from '../views/Tasks.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,9 +51,9 @@ const router = createRouter({
       component: Calendar,
     },
     {
-      path: '/reports',
-      name: 'reports',
-      component: Reports,
+      path: '/tasks',
+      name: 'tasks',
+      component: Tasks,
     },
   ],
 })

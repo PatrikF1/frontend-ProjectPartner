@@ -204,10 +204,10 @@ const navigation = computed(() => [
     current: route.path === '/calendar',
   },
   {
-    name: 'Reports',
-    href: '/reports',
+    name: 'Tasks',
+    href: '/tasks',
     icon: ChartBarIcon,
-    current: route.path === '/reports',
+    current: route.path === '/tasks',
   },
 ])
 
