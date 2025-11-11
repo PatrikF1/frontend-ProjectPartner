@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 var productionBackend = axios.create({
-  baseURL: 'https://backend-projectpartner-production.up.railway.app',
+  baseURL: 'https://backend-projectpartner.onrender.com',
 })
 
 var localBackend = axios.create({
