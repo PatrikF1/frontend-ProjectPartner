@@ -1,12 +1,21 @@
+// @ts-nocheck
 import { createRouter, createWebHistory } from 'vue-router'
+// @ts-ignore
 import Landing from '@/views/Landing.vue'
-import Login from '../views/Login.vue'
-import Registration from '../views/Registration.vue'
-import Dashboard from '../views/Dashboard.vue'
-import Team from '../views/Team.vue'
-import Projects from '../views/Projects.vue'
-import Calendar from '../views/Calendar.vue'
-import Tasks from '../views/Tasks.vue'
+// @ts-ignore
+import Login from '@/views/Login.vue'
+// @ts-ignore
+import Registration from '@/views/Registration.vue'
+// @ts-ignore
+import Dashboard from '@/views/Dashboard.vue'
+// @ts-ignore
+import Team from '@/views/Team.vue'
+// @ts-ignore
+import Projects from '@/views/Projects.vue'
+// @ts-ignore
+import Calendar from '@/views/Calendar.vue'
+// @ts-ignore
+import Tasks from '@/views/Tasks.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

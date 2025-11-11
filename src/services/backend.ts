@@ -1,14 +1,18 @@
 import axios from 'axios'
 
-export const productionBackend = axios.create({
+var productionBackend = axios.create({
   baseURL: 'https://backend-projectpartner-production.up.railway.app',
 })
 
-export const localBackend = axios.create({
+var localBackend = axios.create({
   baseURL: 'http://localhost:3000',
 })
 
-export const backend = localBackend
+var isProduction = import.meta.env.PROD
+
+var backend = isProduction ? productionBackend : localBackend
+
+export { backend }
 
 backend.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
