@@ -83,7 +83,7 @@
             <div class="flex space-x-2">
               <button
                 v-if="!isJoined(selectedProject) && !isAdmin"
-                @click="joinProject(selectedProject._id)"
+                @click="openApplyForm(selectedProject._id)"
                 class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
               >
                 Join
@@ -201,6 +201,8 @@
           </form>
         </div>
       </div>
+
+      <ApplicationForm ref="applicationFormRef" />
     </div>
   </Layout>
 </template>
@@ -210,6 +212,7 @@ import { reactive, ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
+import ApplicationForm from '@/components/ApplicationForm.vue'
 
 var authStore = useAuthStore()
 
@@ -219,6 +222,7 @@ var error = ref(null)
 var success = ref(false)
 var selectedProjectId = ref('')
 var editingProject = ref(null)
+var applicationFormRef = ref(null)
 
 var isAdmin = computed(function () {
   if (authStore.user?.isAdmin === true) return true
@@ -259,6 +263,7 @@ var selectedProject = computed(function () {
   })
 })
 
+// Helper functions
 function isJoined(project) {
   var userId = authStore.user?._id
   for (var i = 0; i < project.members?.length; i++) {
@@ -267,27 +272,6 @@ function isJoined(project) {
     }
   }
   return false
-}
-
-async function createProject() {
-  loading.value = true
-  try {
-    var response = await backend.post('/api/projects', {
-      name: form.name,
-      description: form.description,
-      type: form.type,
-      capacity: form.capacity,
-    })
-    projects.value.push(response.data)
-    form.name = ''
-    form.description = ''
-    form.type = ''
-    form.capacity = ''
-    success.value = true
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
-  }
-  loading.value = false
 }
 
 async function loadProjects() {
@@ -299,6 +283,21 @@ async function loadProjects() {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
+}
+
+// Member functions (for regular users)
+async function openApplyForm(projectId) {
+  if (applicationFormRef.value) {
+    await applicationFormRef.value.open(projectId, function (updatedProject) {
+      var index = projects.value.findIndex(function (project) {
+        return project._id === projectId
+      })
+      if (index >= 0) {
+        projects.value[index] = updatedProject
+      }
+      success.value = true
+    })
+  }
 }
 
 async function joinProject(projectId) {
@@ -324,6 +323,27 @@ async function leaveProject(projectId) {
       return project._id === projectId
     })
     projects.value[index] = response.data
+    success.value = true
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error'
+  }
+  loading.value = false
+}
+
+async function createProject() {
+  loading.value = true
+  try {
+    var response = await backend.post('/api/projects', {
+      name: form.name,
+      description: form.description,
+      type: form.type,
+      capacity: form.capacity,
+    })
+    projects.value.push(response.data)
+    form.name = ''
+    form.description = ''
+    form.type = ''
+    form.capacity = ''
     success.value = true
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
@@ -379,7 +399,7 @@ async function deleteProject(projectId) {
   loading.value = false
 }
 
-onMounted(function () {
-  loadProjects()
+onMounted(async function () {
+  await loadProjects()
 })
 </script>
