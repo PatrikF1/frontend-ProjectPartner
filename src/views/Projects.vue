@@ -215,43 +215,147 @@
 
         <div v-if="loadingApplications" class="text-center text-gray-400">Loading...</div>
 
-        <div v-else-if="adminPendingApplications.length === 0" class="text-center text-gray-400">
-          No pending applications.
-        </div>
+        <div v-else>
+          <div class="flex space-x-2 mb-6 border-b border-gray-700">
+            <button
+              @click="activeTab = 'pending'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-lg',
+                activeTab === 'pending'
+                  ? 'bg-gray-700 text-white border-b-2 border-yellow-500'
+                  : 'text-gray-400 hover:text-white',
+              ]"
+            >
+              Pending ({{ adminPendingApplications.length }})
+            </button>
+            <button
+              @click="activeTab = 'approved'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-lg',
+                activeTab === 'approved'
+                  ? 'bg-gray-700 text-white border-b-2 border-green-500'
+                  : 'text-gray-400 hover:text-white',
+              ]"
+            >
+              Approved ({{ adminApprovedApplications.length }})
+            </button>
+            <button
+              @click="activeTab = 'rejected'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-lg',
+                activeTab === 'rejected'
+                  ? 'bg-gray-700 text-white border-b-2 border-red-500'
+                  : 'text-gray-400 hover:text-white',
+              ]"
+            >
+              Rejected ({{ adminRejectedApplications.length }})
+            </button>
+          </div>
 
-        <div v-else class="space-y-3">
-          <div
-            v-for="app in adminPendingApplications"
-            :key="app._id"
-            class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
-          >
-            <div class="flex justify-between items-start mb-2">
-              <div>
-                <p class="text-white font-medium">
-                  {{ app.createdBy?.name || app.createdBy?.email || 'Unknown' }}
+          <div v-if="activeTab === 'pending'">
+            <div
+              v-if="adminPendingApplications.length === 0"
+              class="text-center text-gray-400 text-sm py-8"
+            >
+              No pending applications.
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="app in adminPendingApplications"
+                :key="app._id"
+                class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <p class="text-white font-medium">
+                      {{ app.createdBy?.name || app.createdBy?.email || 'Unknown' }}
+                    </p>
+                    <p class="text-gray-400 text-sm">
+                      Project: {{ app.projectId?.name || 'Unknown' }}
+                    </p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      @click="adminHandleApplication(app._id, 'approve')"
+                      class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      @click="adminHandleApplication(app._id, 'reject')"
+                      class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+                <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+                <p class="text-gray-400 text-xs">{{ app.description }}</p>
+                <p v-if="app.team" class="text-gray-400 text-xs mt-1">
+                  Team: {{ app.team?.name || app.team?.email || 'N/A' }}
                 </p>
-                <p class="text-gray-400 text-sm">Project: {{ app.projectId?.name || 'Unknown' }}</p>
-              </div>
-              <div class="flex space-x-2">
-                <button
-                  @click="adminHandleApplication(app._id, 'approve')"
-                  class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
-                >
-                  Approve
-                </button>
-                <button
-                  @click="adminHandleApplication(app._id, 'reject')"
-                  class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
-                >
-                  Reject
-                </button>
               </div>
             </div>
-            <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
-            <p class="text-gray-400 text-xs">{{ app.description }}</p>
-            <p v-if="app.team" class="text-gray-400 text-xs mt-1">
-              Team: {{ app.team?.name || app.team?.email || 'N/A' }}
-            </p>
+          </div>
+
+          <div v-if="activeTab === 'approved'">
+            <div
+              v-if="adminApprovedApplications.length === 0"
+              class="text-center text-gray-400 text-sm py-8"
+            >
+              No approved applications.
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="app in adminApprovedApplications"
+                :key="app._id"
+                class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <p class="text-white font-medium">
+                      {{ app.createdBy?.name || app.createdBy?.email || 'Unknown' }}
+                    </p>
+                    <p class="text-gray-400 text-sm">
+                      Project: {{ app.projectId?.name || 'Unknown' }}
+                    </p>
+                    <p class="text-green-400 text-xs mt-1">Status: Approved</p>
+                  </div>
+                </div>
+                <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+                <p class="text-gray-400 text-xs">{{ app.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="activeTab === 'rejected'">
+            <div
+              v-if="adminRejectedApplications.length === 0"
+              class="text-center text-gray-400 text-sm py-8"
+            >
+              No rejected applications.
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="app in adminRejectedApplications"
+                :key="app._id"
+                class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <p class="text-white font-medium">
+                      {{ app.createdBy?.name || app.createdBy?.email || 'Unknown' }}
+                    </p>
+                    <p class="text-gray-400 text-sm">
+                      Project: {{ app.projectId?.name || 'Unknown' }}
+                    </p>
+                    <p class="text-red-400 text-xs mt-1">Status: Rejected</p>
+                  </div>
+                </div>
+                <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+                <p class="text-gray-400 text-xs">{{ app.description }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -277,6 +381,7 @@ var error = ref(null)
 var selectedProjectId = ref('')
 var editingProject = ref(null)
 var showCreateForm = ref(false)
+var activeTab = ref('pending')
 
 var form = reactive({
   name: '',

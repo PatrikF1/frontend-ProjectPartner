@@ -1,14 +1,6 @@
 <template>
   <Layout>
     <div class="space-y-6">
-      <div v-if="applicationStatus === 'pending'" class="bg-gray-800 rounded-lg shadow-lg p-6 mb-4">
-        <h2 class="text-xl font-semibold text-white mb-4">Application Status</h2>
-        <div class="text-center py-4">
-          <div class="text-yellow-400 text-lg font-medium mb-2">Pending</div>
-          <p class="text-gray-300">Waiting for admin approval...</p>
-        </div>
-      </div>
-
       <div class="bg-gray-800 rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-white">Submit Project Application</h2>
@@ -85,6 +77,115 @@
           </button>
         </form>
       </div>
+
+      <div v-if="myApplications.length > 0" class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">My Applications</h2>
+
+        <div class="flex space-x-2 mb-6 border-b border-gray-700">
+          <button
+            @click="activeTab = 'pending'"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-t-lg',
+              activeTab === 'pending'
+                ? 'bg-gray-700 text-white border-b-2 border-yellow-500'
+                : 'text-gray-400 hover:text-white',
+            ]"
+          >
+            Pending ({{ myPendingApplications.length }})
+          </button>
+          <button
+            @click="activeTab = 'approved'"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-t-lg',
+              activeTab === 'approved'
+                ? 'bg-gray-700 text-white border-b-2 border-green-500'
+                : 'text-gray-400 hover:text-white',
+            ]"
+          >
+            Approved ({{ myApprovedApplications.length }})
+          </button>
+          <button
+            @click="activeTab = 'rejected'"
+            :class="[
+              'px-4 py-2 text-sm font-medium rounded-t-lg',
+              activeTab === 'rejected'
+                ? 'bg-gray-700 text-white border-b-2 border-red-500'
+                : 'text-gray-400 hover:text-white',
+            ]"
+          >
+            Rejected ({{ myRejectedApplications.length }})
+          </button>
+        </div>
+
+        <div v-if="activeTab === 'pending'">
+          <div
+            v-if="myPendingApplications.length === 0"
+            class="text-center text-gray-400 text-sm py-8"
+          >
+            No pending applications.
+          </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="app in myPendingApplications"
+              :key="app._id"
+              class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
+            >
+              <p class="text-white font-medium mb-1">
+                Project: {{ getProjectName(app.projectId) }}
+              </p>
+              <p class="text-yellow-400 text-sm mb-2">Status: Pending</p>
+              <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+              <p class="text-gray-400 text-xs">{{ app.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeTab === 'approved'">
+          <div
+            v-if="myApprovedApplications.length === 0"
+            class="text-center text-gray-400 text-sm py-8"
+          >
+            No approved applications.
+          </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="app in myApprovedApplications"
+              :key="app._id"
+              class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
+            >
+              <p class="text-white font-medium mb-1">
+                Project: {{ getProjectName(app.projectId) }}
+              </p>
+              <p class="text-green-400 text-sm mb-2">Status: Approved</p>
+              <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+              <p class="text-gray-400 text-xs">{{ app.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeTab === 'rejected'">
+          <div
+            v-if="myRejectedApplications.length === 0"
+            class="text-center text-gray-400 text-sm py-8"
+          >
+            No rejected applications.
+          </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="app in myRejectedApplications"
+              :key="app._id"
+              class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
+            >
+              <p class="text-white font-medium mb-1">
+                Project: {{ getProjectName(app.projectId) }}
+              </p>
+              <p class="text-red-400 text-sm mb-2">Status: Rejected</p>
+              <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+              <p class="text-gray-400 text-xs">{{ app.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </Layout>
 </template>
@@ -107,6 +208,7 @@ var projects = ref([])
 var applications = ref([])
 var members = ref([])
 var showForm = ref(false)
+var activeTab = ref('pending')
 
 var form = reactive({
   name: '',
@@ -121,40 +223,36 @@ var userProjects = computed(() => {
   })
 })
 
-var applicationStatus = computed(() => {
-  if (!selectedProjectId.value) {
-    return 'none'
-  }
-
+var myApplications = computed(() => {
   var userId = authStore.user?._id
-  if (!userId) {
-    return 'none'
-  }
-
-  var selectedId = String(selectedProjectId.value)
+  if (!userId) return []
   var userIdStr = String(userId)
-
-  var application = applications.value.find((app) => {
-    var appProjectId = app.projectId?._id || app.projectId
+  return applications.value.filter((app) => {
     var appUserId = app.createdBy?._id || app.createdBy
-    return String(appProjectId) === selectedId && String(appUserId) === userIdStr
+    return String(appUserId) === userIdStr
   })
-
-  if (application) {
-    if (application.status === 'pending') {
-      applicationsStore.addPending(selectedId)
-    } else {
-      applicationsStore.removePending(selectedId)
-    }
-    return application.status || 'none'
-  }
-
-  if (applicationsStore.isPending(selectedId)) {
-    return 'pending'
-  }
-
-  return 'none'
 })
+
+var myPendingApplications = computed(() => {
+  return myApplications.value.filter((app) => app.status === 'pending')
+})
+
+var myApprovedApplications = computed(() => {
+  return myApplications.value.filter((app) => app.status === 'approved')
+})
+
+var myRejectedApplications = computed(() => {
+  return myApplications.value.filter((app) => app.status === 'rejected')
+})
+
+function getProjectName(projectId) {
+  if (!projectId) return 'Unknown'
+  if (typeof projectId === 'object' && projectId.name) {
+    return projectId.name
+  }
+  var project = projects.value.find((p) => p._id === projectId || p._id === projectId._id)
+  return project?.name || 'Unknown'
+}
 
 async function loadUsers() {
   loadingUsers.value = true
