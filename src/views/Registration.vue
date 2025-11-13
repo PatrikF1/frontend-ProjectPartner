@@ -164,7 +164,7 @@ async function onSubmit() {
 
     setTimeout(() => router.push('/dashboard'), 200)
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Greška pri registraciji'
+    error.value = e?.response?.data?.msg || 'Error registering'
     console.error(e)
   } finally {
     authStore.setLoading(false)

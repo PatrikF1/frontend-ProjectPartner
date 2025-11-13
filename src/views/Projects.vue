@@ -2,10 +2,18 @@
   <Layout>
     <div class="min-h-screen p-6 space-y-6">
       <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Create New Project</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-white">Create New Project</h2>
+          <button
+            @click="showCreateForm = !showCreateForm"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            {{ showCreateForm ? 'Hide Form' : 'Show Form' }}
+          </button>
+        </div>
         <p class="text-gray-300 mb-6">Create a new project for collaboration.</p>
 
-        <form @submit.prevent="createProject" class="space-y-4">
+        <form v-if="showCreateForm" @submit.prevent="adminCreateProject" class="space-y-4">
           <input
             v-model="form.name"
             type="text"
@@ -43,7 +51,6 @@
           />
 
           <div v-if="error" class="text-red-400 text-sm">{{ error }}</div>
-          <div v-if="success" class="text-green-400 text-sm">✓ Created!</div>
 
           <button
             type="submit"
@@ -61,7 +68,7 @@
 
         <div v-if="loading" class="text-center text-gray-400">Loading projects...</div>
 
-        <div v-else-if="sortedProjects.length === 0" class="text-center text-gray-400">
+        <div v-else-if="projects.length === 0" class="text-center text-gray-400">
           No projects available yet.
         </div>
 
@@ -71,7 +78,7 @@
             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
           >
             <option value="">Select a project...</option>
-            <option v-for="project in sortedProjects" :key="project._id" :value="project._id">
+            <option v-for="project in projects" :key="project._id" :value="project._id">
               {{ project.name }} - by {{ getName(project.createdBy) }}
             </option>
           </select>
@@ -83,7 +90,7 @@
             <div class="flex space-x-2">
               <button
                 v-if="!isJoined(selectedProject) && !isAdmin"
-                @click="openApplyForm(selectedProject._id)"
+                @click="joinProject(selectedProject._id)"
                 class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
               >
                 Join
@@ -97,14 +104,14 @@
               </button>
               <button
                 v-if="isAdmin"
-                @click="editProject(selectedProject)"
+                @click="adminEditProject(selectedProject)"
                 class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
               >
                 Edit
               </button>
               <button
                 v-if="isAdmin"
-                @click="deleteProject(selectedProject._id)"
+                @click="adminDeleteProject(selectedProject._id)"
                 class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
               >
                 Delete
@@ -136,7 +143,7 @@
           </div>
 
           <div class="mt-3 text-xs text-gray-500">
-            Created: {{ formatDate(selectedProject.createdAt) }} by
+            Created: {{ new Date(selectedProject.createdAt).toLocaleDateString() }} by
             {{ getName(selectedProject.createdBy) }}
           </div>
         </div>
@@ -149,7 +156,7 @@
         <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
           <h3 class="text-lg font-medium text-white mb-4">Edit Project</h3>
 
-          <form @submit.prevent="updateProject" class="space-y-4">
+          <form @submit.prevent="adminUpdateProject" class="space-y-4">
             <input
               v-model="editingProject.name"
               type="text"
@@ -202,33 +209,74 @@
         </div>
       </div>
 
-      <ApplicationForm ref="applicationFormRef" />
+      <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">All Applications</h2>
+        <p class="text-gray-300 mb-6">Review and approve or reject project applications.</p>
+
+        <div v-if="loadingApplications" class="text-center text-gray-400">Loading...</div>
+
+        <div v-else-if="adminPendingApplications.length === 0" class="text-center text-gray-400">
+          No pending applications.
+        </div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="app in adminPendingApplications"
+            :key="app._id"
+            class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
+          >
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <p class="text-white font-medium">
+                  {{ app.createdBy?.name || app.createdBy?.email || 'Unknown' }}
+                </p>
+                <p class="text-gray-400 text-sm">Project: {{ app.projectId?.name || 'Unknown' }}</p>
+              </div>
+              <div class="flex space-x-2">
+                <button
+                  @click="adminHandleApplication(app._id, 'approve')"
+                  class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
+                >
+                  Approve
+                </button>
+                <button
+                  @click="adminHandleApplication(app._id, 'reject')"
+                  class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+            <p class="text-gray-300 text-sm mb-1">Idea: {{ app.idea }}</p>
+            <p class="text-gray-400 text-xs">{{ app.description }}</p>
+            <p v-if="app.team" class="text-gray-400 text-xs mt-1">
+              Team: {{ app.team?.name || app.team?.email || 'N/A' }}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </Layout>
 </template>
 
 <script setup>
 import { reactive, ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
-import ApplicationForm from '@/components/ApplicationForm.vue'
 
+var router = useRouter()
 var authStore = useAuthStore()
 
 var projects = ref([])
+var applications = ref([])
 var loading = ref(false)
+var loadingApplications = ref(false)
 var error = ref(null)
-var success = ref(false)
 var selectedProjectId = ref('')
 var editingProject = ref(null)
-var applicationFormRef = ref(null)
-
-var isAdmin = computed(function () {
-  if (authStore.user?.isAdmin === true) return true
-  if (authStore.user?.isAdmin === 'true') return true
-  return false
-})
+var showCreateForm = ref(false)
 
 var form = reactive({
   name: '',
@@ -237,42 +285,37 @@ var form = reactive({
   capacity: '',
 })
 
-function formatDate(dateString) {
-  var date = new Date(dateString)
-  return date.toLocaleDateString()
-}
+var isAdmin = computed(() => {
+  if (authStore.user?.isAdmin === true) return true
+  if (authStore.user?.isAdmin === 'true') return true
+  return false
+})
 
 function getName(user) {
   return user?.name || user?.email || 'Unknown'
 }
 
-var sortedProjects = computed(function () {
-  var sorted = [...projects.value]
-  sorted.sort(function (a, b) {
-    var nameA = getName(a.createdBy)
-    var nameB = getName(b.createdBy)
-    return nameA.localeCompare(nameB)
-  })
-  return sorted
-})
-
-var selectedProject = computed(function () {
+var selectedProject = computed(() => {
   if (!selectedProjectId.value) return null
-  return projects.value.find(function (p) {
-    return p._id === selectedProjectId.value
-  })
+  return projects.value.find((p) => p._id === selectedProjectId.value)
 })
 
-// Helper functions
 function isJoined(project) {
   var userId = authStore.user?._id
-  for (var i = 0; i < project.members?.length; i++) {
-    if (project.members[i]._id === userId) {
-      return true
-    }
-  }
-  return false
+  return project.members?.some((member) => member._id === userId) || false
 }
+
+var adminPendingApplications = computed(() => {
+  return applications.value.filter((app) => app.status === 'pending')
+})
+
+var adminApprovedApplications = computed(() => {
+  return applications.value.filter((app) => app.status === 'approved')
+})
+
+var adminRejectedApplications = computed(() => {
+  return applications.value.filter((app) => app.status === 'rejected')
+})
 
 async function loadProjects() {
   loading.value = true
@@ -285,30 +328,39 @@ async function loadProjects() {
   loading.value = false
 }
 
-// Member functions (for regular users)
-async function openApplyForm(projectId) {
-  if (applicationFormRef.value) {
-    await applicationFormRef.value.open(projectId, function (updatedProject) {
-      var index = projects.value.findIndex(function (project) {
-        return project._id === projectId
-      })
-      if (index >= 0) {
-        projects.value[index] = updatedProject
-      }
-      success.value = true
-    })
+async function adminLoadApplications() {
+  if (!isAdmin.value) return
+  loadingApplications.value = true
+  try {
+    var response = await backend.get('/api/applications')
+    applications.value = response.data
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error loading applications'
   }
+  loadingApplications.value = false
+}
+
+async function adminHandleApplication(applicationId, action) {
+  loadingApplications.value = true
+  try {
+    await backend.put('/api/applications/' + applicationId + '/' + action, {})
+    await adminLoadApplications()
+    await loadProjects()
+  } catch (e) {
+    error.value = e?.response?.data?.msg || 'Error handling application'
+  }
+  loadingApplications.value = false
 }
 
 async function joinProject(projectId) {
   loading.value = true
   try {
     var response = await backend.post('/api/projects/' + projectId + '/join', {})
-    var index = projects.value.findIndex(function (project) {
-      return project._id === projectId
-    })
-    projects.value[index] = response.data
-    success.value = true
+    var index = projects.value.findIndex((project) => project._id === projectId)
+    if (index >= 0) {
+      projects.value[index] = response.data
+    }
+    router.push('/tasks')
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
@@ -319,39 +371,33 @@ async function leaveProject(projectId) {
   loading.value = true
   try {
     var response = await backend.post('/api/projects/' + projectId + '/leave', {})
-    var index = projects.value.findIndex(function (project) {
-      return project._id === projectId
-    })
-    projects.value[index] = response.data
-    success.value = true
+    var index = projects.value.findIndex((project) => project._id === projectId)
+    if (index >= 0) {
+      projects.value[index] = response.data
+    }
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
 
-async function createProject() {
+async function adminCreateProject() {
   loading.value = true
   try {
-    var response = await backend.post('/api/projects', {
-      name: form.name,
-      description: form.description,
-      type: form.type,
-      capacity: form.capacity,
-    })
+    var response = await backend.post('/api/projects', form)
     projects.value.push(response.data)
     form.name = ''
     form.description = ''
     form.type = ''
     form.capacity = ''
-    success.value = true
+    showCreateForm.value = false
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
 
-function editProject(project) {
+function adminEditProject(project) {
   editingProject.value = {
     _id: project._id,
     name: project.name,
@@ -361,45 +407,39 @@ function editProject(project) {
   }
 }
 
-async function updateProject() {
+async function adminUpdateProject() {
   loading.value = true
   try {
-    var response = await backend.put('/api/projects/' + editingProject.value._id, {
-      name: editingProject.value.name,
-      description: editingProject.value.description,
-      type: editingProject.value.type,
-      capacity: editingProject.value.capacity,
-    })
-    var index = projects.value.findIndex(function (project) {
-      return project._id === editingProject.value._id
-    })
-    projects.value[index] = response.data
-    editingProject.value = null
-    success.value = true
+    var response = await backend.put(
+      '/api/projects/' + editingProject.value._id,
+      editingProject.value,
+    )
+    var index = projects.value.findIndex((project) => project._id === editingProject.value._id)
+    if (index >= 0) {
+      projects.value[index] = response.data
+      editingProject.value = null
+    }
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
 
-async function deleteProject(projectId) {
+async function adminDeleteProject(projectId) {
   if (!confirm('Delete this project?')) return
   loading.value = true
   try {
     await backend.delete('/api/projects/' + projectId)
-    var index = projects.value.findIndex(function (project) {
-      return project._id === projectId
-    })
-    projects.value.splice(index, 1)
+    projects.value = projects.value.filter((project) => project._id !== projectId)
     selectedProjectId.value = ''
-    success.value = true
   } catch (e) {
     error.value = e?.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
 
-onMounted(async function () {
+onMounted(async () => {
   await loadProjects()
+  await adminLoadApplications()
 })
 </script>
