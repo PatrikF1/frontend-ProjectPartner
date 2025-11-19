@@ -157,13 +157,7 @@ import { computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
-import {
-  HomeIcon,
-  UserGroupIcon,
-  FolderIcon,
-  CalendarIcon,
-  ChartBarIcon,
-} from '@heroicons/vue/24/outline'
+import { HomeIcon, FolderIcon, CalendarIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 
 const mobileMenuOpen = ref(false)
 
@@ -184,12 +178,6 @@ const navigation = computed(() => [
     href: '/dashboard',
     icon: HomeIcon,
     current: route.path === '/dashboard',
-  },
-  {
-    name: 'Team',
-    href: '/team',
-    icon: UserGroupIcon,
-    current: route.path === '/team',
   },
   {
     name: 'Projects',

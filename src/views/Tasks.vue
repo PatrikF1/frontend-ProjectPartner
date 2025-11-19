@@ -50,22 +50,6 @@
             ></textarea>
           </div>
 
-          <div>
-            <label class="block text-sm text-gray-300 mb-1">Team (optional)</label>
-            <select
-              v-model="applicationForm.team"
-              :disabled="isLoadingUsers"
-              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              <option value="">
-                {{ isLoadingUsers ? 'Loading users...' : 'Select team member...' }}
-              </option>
-              <option v-for="user in teamMembers" :key="user._id" :value="user._id">
-                {{ user.name }} {{ user.lastname }} ({{ user.email }})
-              </option>
-            </select>
-          </div>
-
           <div v-if="errorMessage" class="text-red-400 text-sm">{{ errorMessage }}</div>
 
           <button
@@ -837,7 +821,6 @@ var authStore = useAuthStore()
 var applicationsStore = useApplicationsStore()
 
 var isLoading = ref(false)
-var isLoadingUsers = ref(false)
 var isLoadingTasks = ref(false)
 var errorMessage = ref(null)
 var selectedProjectId = ref('')
@@ -848,7 +831,6 @@ var expandedApplications = ref([])
 var expandedAdminApplications = ref([])
 var allProjects = ref([])
 var allApplications = ref([])
-var teamMembers = ref([])
 var showApplicationForm = ref(false)
 var activeApplicationTab = ref('pending')
 var adminFilterType = ref('all')
@@ -860,7 +842,6 @@ var allUsers = ref([])
 var applicationForm = reactive({
   name: '',
   description: '',
-  team: '',
 })
 
 var newTaskForm = reactive({
@@ -951,12 +932,10 @@ function handleFilterTypeChange() {
 
 async function loadAllData() {
   isLoading.value = true
-  isLoadingUsers.value = true
   try {
     if (isAdmin.value) {
       var usersResponse = await backend.get('/api/users')
       allUsers.value = usersResponse.data
-      teamMembers.value = usersResponse.data.filter((u) => !u.isAdmin)
 
       var projectsResponse = await backend.get('/api/projects')
       allProjects.value = projectsResponse.data
@@ -967,7 +946,6 @@ async function loadAllData() {
       var dashboardResponse = await backend.get('/api/users/dashboard')
       var data = dashboardResponse.data
       allUsers.value = data.users
-      teamMembers.value = data.users.filter((u) => !u.isAdmin)
       allProjects.value = data.projects
       myProjects.value = data.myProjects
       allApplications.value = data.applications
@@ -977,7 +955,6 @@ async function loadAllData() {
     errorMessage.value = 'Error loading data'
   }
   isLoading.value = false
-  isLoadingUsers.value = false
 }
 
 async function submitApplication() {
@@ -987,12 +964,10 @@ async function submitApplication() {
       projectId: selectedProjectId.value,
       idea: applicationForm.name,
       description: applicationForm.description,
-      team: applicationForm.team,
     })
     applicationsStore.addPending(selectedProjectId.value)
     applicationForm.name = ''
     applicationForm.description = ''
-    applicationForm.team = ''
     selectedProjectId.value = ''
     await loadAllData()
   } catch (e) {

@@ -9,8 +9,6 @@ import Registration from '@/views/Registration.vue'
 // @ts-ignore
 import Dashboard from '@/views/Dashboard.vue'
 // @ts-ignore
-import Team from '@/views/Team.vue'
-// @ts-ignore
 import Projects from '@/views/Projects.vue'
 // @ts-ignore
 import Calendar from '@/views/Calendar.vue'
@@ -43,11 +41,6 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
-    },
-    {
-      path: '/team',
-      name: 'team',
-      component: Team,
     },
     {
       path: '/projects',
