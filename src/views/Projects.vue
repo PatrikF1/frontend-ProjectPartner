@@ -66,85 +66,164 @@
         <h2 class="text-xl font-semibold text-white mb-4">Available Projects</h2>
         <p class="text-gray-300 mb-6">Browse available projects.</p>
 
-        <div v-if="loading" class="text-center text-gray-400">Loading projects...</div>
-
-        <div v-else-if="projects.length === 0" class="text-center text-gray-400">
-          No projects available yet.
-        </div>
-
-        <div v-else class="mb-6">
+        <div class="mb-6">
+          <label class="block text-sm text-gray-300 mb-2">Filter by:</label>
           <select
-            v-model="selectedProjectId"
-            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+            v-model="filterType"
+            class="w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">Select a project...</option>
+            <option value="all">All Projects</option>
+            <option value="admin">By Admin</option>
+            <option value="type">By Type</option>
+            <option value="project">By Project</option>
+          </select>
+
+          <select
+            v-if="filterType === 'admin'"
+            v-model="selectedAdminId"
+            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">Select admin...</option>
+            <option
+              v-for="admin in projects
+                .map((p) => p.createdBy)
+                .filter((admin, index, self) => {
+                  var adminId = admin?._id || admin
+                  return self.findIndex((a) => (a?._id || a) === adminId) === index
+                })"
+              :key="admin?._id || admin"
+              :value="admin?._id || admin"
+            >
+              {{ admin?.name || admin?.email || 'Unknown' }}
+            </option>
+          </select>
+
+          <select
+            v-if="filterType === 'type'"
+            v-model="selectedType"
+            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">Select type...</option>
+            <option value="workspace">Workspace</option>
+            <option value="project-space">Project Space</option>
+            <option value="team-space">Team Space</option>
+            <option value="meeting-room">Meeting Room</option>
+          </select>
+
+          <select
+            v-if="filterType === 'project'"
+            v-model="selectedProjectId"
+            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">Select project...</option>
             <option v-for="project in projects" :key="project._id" :value="project._id">
-              {{ project.name }} - by {{ getName(project.createdBy) }}
+              {{ project.name }}
             </option>
           </select>
         </div>
 
-        <div v-if="selectedProject" class="bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500">
-          <div class="flex justify-between items-start mb-3">
-            <h3 class="text-lg font-medium text-white">{{ selectedProject.name }}</h3>
-            <div class="flex space-x-2">
-              <button
-                v-if="!isJoined(selectedProject) && !isAdmin"
-                @click="joinProject(selectedProject._id)"
-                class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
-              >
-                Join
-              </button>
-              <button
-                v-if="isJoined(selectedProject) && !isAdmin"
-                @click="leaveProject(selectedProject._id)"
-                class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
-              >
-                Leave
-              </button>
-              <button
-                v-if="isAdmin"
-                @click="adminEditProject(selectedProject)"
-                class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
-              >
-                Edit
-              </button>
-              <button
-                v-if="isAdmin"
-                @click="adminDeleteProject(selectedProject._id)"
-                class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+        <div v-if="loading" class="text-center text-gray-400">Loading projects...</div>
 
-          <p class="text-gray-300 text-sm mb-3">{{ selectedProject.description }}</p>
+        <div
+          v-else-if="
+            projects.filter((p) => {
+              if (filterType === 'all') return true
+              if (filterType === 'admin' && selectedAdminId) {
+                return String(p.createdBy?._id || p.createdBy) === String(selectedAdminId)
+              }
+              if (filterType === 'type' && selectedType) {
+                return p.type === selectedType
+              }
+              if (filterType === 'project' && selectedProjectId) {
+                return String(p._id) === String(selectedProjectId)
+              }
+              return true
+            }).length === 0
+          "
+          class="text-center text-gray-400"
+        >
+          No projects found.
+        </div>
 
-          <div class="flex items-center space-x-4 text-sm text-gray-400">
-            <span class="text-indigo-400">{{ selectedProject.type }}</span>
-            <span v-if="selectedProject.capacity" class="text-green-400">
-              Capacity: {{ selectedProject.capacity }}
-            </span>
-            <span class="text-blue-400"> Members: {{ selectedProject.members?.length || 0 }} </span>
-          </div>
-
-          <div v-if="isAdmin && selectedProject.members?.length > 0" class="mt-3">
-            <p class="text-gray-300 text-xs font-semibold mb-1">Members:</p>
-            <div class="space-y-0.5">
-              <div
-                v-for="member in selectedProject.members"
-                :key="member._id"
-                class="text-gray-400 text-xs"
-              >
-                {{ member.email }}
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            v-for="project in projects.filter((p) => {
+              if (filterType === 'all') return true
+              if (filterType === 'admin' && selectedAdminId) {
+                return String(p.createdBy?._id || p.createdBy) === String(selectedAdminId)
+              }
+              if (filterType === 'type' && selectedType) {
+                return p.type === selectedType
+              }
+              if (filterType === 'project' && selectedProjectId) {
+                return String(p._id) === String(selectedProjectId)
+              }
+              return true
+            })"
+            :key="project._id"
+            class="bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500"
+          >
+            <div class="flex justify-between items-start mb-3">
+              <h3 class="text-lg font-medium text-white">{{ project.name }}</h3>
+              <div class="flex space-x-2">
+                <button
+                  v-if="!isJoined(project) && !isAdmin"
+                  @click="joinProject(project._id)"
+                  class="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
+                >
+                  Join
+                </button>
+                <button
+                  v-if="isJoined(project) && !isAdmin"
+                  @click="leaveProject(project._id)"
+                  class="px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                >
+                  Leave
+                </button>
+                <button
+                  v-if="isAdmin"
+                  @click="adminEditProject(project)"
+                  class="px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+                <button
+                  v-if="isAdmin"
+                  @click="adminDeleteProject(project._id)"
+                  class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                >
+                  Delete
+                </button>
               </div>
             </div>
-          </div>
 
-          <div class="mt-3 text-xs text-gray-500">
-            Created: {{ new Date(selectedProject.createdAt).toLocaleDateString() }} by
-            {{ getName(selectedProject.createdBy) }}
+            <p class="text-gray-300 text-sm mb-3">{{ project.description }}</p>
+
+            <div class="flex items-center space-x-4 text-sm text-gray-400 mb-3">
+              <span class="text-indigo-400">{{ project.type }}</span>
+              <span v-if="project.capacity" class="text-green-400">
+                Capacity: {{ project.capacity }}
+              </span>
+              <span class="text-blue-400"> Members: {{ project.members?.length || 0 }} </span>
+            </div>
+
+            <div v-if="isAdmin && project.members?.length > 0" class="mb-3">
+              <p class="text-gray-300 text-xs font-semibold mb-1">Members:</p>
+              <div class="space-y-0.5">
+                <div
+                  v-for="member in project.members"
+                  :key="member._id"
+                  class="text-gray-400 text-xs"
+                >
+                  {{ member.email }}
+                </div>
+              </div>
+            </div>
+
+            <div class="text-xs text-gray-500">
+              Created: {{ new Date(project.createdAt).toLocaleDateString() }} by
+              {{ getName(project.createdBy) }}
+            </div>
           </div>
         </div>
       </div>
@@ -382,6 +461,9 @@ var selectedProjectId = ref('')
 var editingProject = ref(null)
 var showCreateForm = ref(false)
 var activeTab = ref('pending')
+var filterType = ref('all')
+var selectedAdminId = ref('')
+var selectedType = ref('')
 
 var form = reactive({
   name: '',
@@ -399,11 +481,6 @@ var isAdmin = computed(() => {
 function getName(user) {
   return user?.name || user?.email || 'Unknown'
 }
-
-var selectedProject = computed(() => {
-  if (!selectedProjectId.value) return null
-  return projects.value.find((p) => p._id === selectedProjectId.value)
-})
 
 function isJoined(project) {
   var userId = authStore.user?._id
