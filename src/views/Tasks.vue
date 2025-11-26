@@ -62,278 +62,7 @@
         </form>
       </div>
 
-      <div v-if="!isAdmin" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div v-if="approvedApplications.length > 0" class="bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
-          <p class="text-gray-300 mb-6">Manage tasks for your approved projects.</p>
-
-          <div v-for="app in approvedApplications" :key="app._id" class="mb-4">
-            <div class="bg-gray-700 rounded-lg overflow-hidden">
-              <div
-                @click="
-                  expandedApplications.includes(String(app._id))
-                    ? (expandedApplications = expandedApplications.filter(
-                        (id) => id !== String(app._id),
-                      ))
-                    : expandedApplications.push(String(app._id))
-                "
-                class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-600 transition"
-              >
-                <div class="flex-1">
-                  <h3 class="text-lg font-medium text-white mb-1">{{ app.idea }}</h3>
-                  <div
-                    v-if="
-                      allTasks.filter(
-                        (t) =>
-                          String(t.projectId?._id || t.projectId) ===
-                            String(app.projectId?._id || app.projectId) &&
-                          String(t.applicationId?._id || t.applicationId) === String(app._id),
-                      ).length > 0
-                    "
-                    class="flex items-center gap-4"
-                  >
-                    <span class="text-gray-300 text-sm">
-                      Tasks:
-                      {{
-                        allTasks.filter(
-                          (t) =>
-                            String(t.projectId?._id || t.projectId) ===
-                              String(app.projectId?._id || app.projectId) &&
-                            String(t.applicationId?._id || t.applicationId) === String(app._id),
-                        ).length
-                      }}
-                    </span>
-                    <span class="text-gray-300 text-sm">
-                      Progress:
-                      {{
-                        Math.round(
-                          (allTasks.filter(
-                            (t) =>
-                              String(t.projectId?._id || t.projectId) ===
-                                String(app.projectId?._id || app.projectId) &&
-                              String(t.applicationId?._id || t.applicationId) === String(app._id) &&
-                              t.status === 'completed',
-                          ).length /
-                            (allTasks.filter(
-                              (t) =>
-                                String(t.projectId?._id || t.projectId) ===
-                                  String(app.projectId?._id || app.projectId) &&
-                                String(t.applicationId?._id || t.applicationId) === String(app._id),
-                            ).length || 1)) *
-                            100,
-                        )
-                      }}%
-                    </span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    @click.stop="toggleTaskForm(app._id)"
-                    class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700"
-                  >
-                    {{ openTaskFormForApplicationId === app._id ? 'Hide Form' : 'Add Task' }}
-                  </button>
-                  <span class="text-gray-400 text-xl">
-                    {{ expandedApplications.includes(String(app._id)) ? '▼' : '▶' }}
-                  </span>
-                </div>
-              </div>
-
-              <div
-                v-if="expandedApplications.includes(String(app._id))"
-                class="p-4 border-t border-gray-600"
-              >
-                <template
-                  v-for="(task, index) in allTasks.filter(
-                    (t) =>
-                      String(t.projectId?._id || t.projectId) ===
-                        String(app.projectId?._id || app.projectId) &&
-                      String(t.applicationId?._id || t.applicationId) === String(app._id),
-                  )"
-                  :key="task._id"
-                >
-                  <div v-if="index === 0" class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-gray-300 text-sm">Progress:</span>
-                      <span class="text-gray-300 text-sm">
-                        {{
-                          Math.round(
-                            (allTasks.filter(
-                              (t) =>
-                                String(t.projectId?._id || t.projectId) ===
-                                  String(app.projectId?._id || app.projectId) &&
-                                String(t.applicationId?._id || t.applicationId) ===
-                                  String(app._id) &&
-                                t.status === 'completed',
-                            ).length /
-                              (allTasks.filter(
-                                (t) =>
-                                  String(t.projectId?._id || t.projectId) ===
-                                    String(app.projectId?._id || app.projectId) &&
-                                  String(t.applicationId?._id || t.applicationId) ===
-                                    String(app._id),
-                              ).length || 1)) *
-                              100,
-                          )
-                        }}% ({{
-                          allTasks.filter(
-                            (t) =>
-                              String(t.projectId?._id || t.projectId) ===
-                                String(app.projectId?._id || app.projectId) &&
-                              String(t.applicationId?._id || t.applicationId) === String(app._id) &&
-                              t.status === 'completed',
-                          ).length
-                        }}/{{
-                          allTasks.filter(
-                            (t) =>
-                              String(t.projectId?._id || t.projectId) ===
-                                String(app.projectId?._id || app.projectId) &&
-                              String(t.applicationId?._id || t.applicationId) === String(app._id),
-                          ).length
-                        }})
-                      </span>
-                    </div>
-                    <div class="w-full bg-gray-600 rounded-full h-2">
-                      <div
-                        class="bg-green-500 h-2 rounded-full"
-                        :style="{
-                          width:
-                            Math.round(
-                              (allTasks.filter(
-                                (t) =>
-                                  String(t.projectId?._id || t.projectId) ===
-                                    String(app.projectId?._id || app.projectId) &&
-                                  String(t.applicationId?._id || t.applicationId) ===
-                                    String(app._id) &&
-                                  t.status === 'completed',
-                              ).length /
-                                (allTasks.filter(
-                                  (t) =>
-                                    String(t.projectId?._id || t.projectId) ===
-                                      String(app.projectId?._id || app.projectId) &&
-                                    String(t.applicationId?._id || t.applicationId) ===
-                                      String(app._id),
-                                ).length || 1)) *
-                                100,
-                            ) + '%',
-                        }"
-                      ></div>
-                    </div>
-                  </div>
-                </template>
-
-                <form
-                  v-if="openTaskFormForApplicationId === app._id"
-                  @submit.prevent="createTask(app)"
-                  class="space-y-3 mb-4 bg-gray-600 p-4 rounded-lg"
-                >
-                  <input
-                    v-model="newTaskForm.name"
-                    type="text"
-                    required
-                    placeholder="Task name"
-                    class="w-full px-3 py-2 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <textarea
-                    v-model="newTaskForm.description"
-                    rows="2"
-                    placeholder="Description (optional)"
-                    class="w-full px-3 py-2 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  ></textarea>
-                  <button
-                    type="submit"
-                    :disabled="isLoadingTasks"
-                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-                  >
-                    {{ isLoadingTasks ? 'Creating...' : 'Create Task' }}
-                  </button>
-                </form>
-
-                <div
-                  v-if="
-                    allTasks.filter(
-                      (t) =>
-                        String(t.projectId?._id || t.projectId) ===
-                          String(app.projectId?._id || app.projectId) &&
-                        String(t.applicationId?._id || t.applicationId) === String(app._id),
-                    ).length === 0
-                  "
-                  class="text-gray-400 text-sm py-4 text-center"
-                >
-                  No tasks yet. Create your first task!
-                </div>
-
-                <div v-else class="space-y-3">
-                  <div
-                    v-for="(task, index) in allTasks.filter(
-                      (t) =>
-                        String(t.projectId?._id || t.projectId) ===
-                          String(app.projectId?._id || app.projectId) &&
-                        String(t.applicationId?._id || t.applicationId) === String(app._id),
-                    )"
-                    :key="task._id"
-                    @click="toggleTaskPopup(task)"
-                    class="bg-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-500 transition"
-                  >
-                    <div class="flex items-start gap-3 mb-3">
-                      <div
-                        class="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                      >
-                        {{ index + 1 }}
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-white font-semibold text-base mb-2">{{ task.name }}</p>
-                        <p
-                          v-if="task.description"
-                          class="text-gray-300 text-sm mb-3 leading-relaxed"
-                        >
-                          {{ task.description }}
-                        </p>
-                        <div class="flex items-center gap-2">
-                          <span class="text-gray-400 text-sm">Status:</span>
-                          <span
-                            :class="
-                              task.status === 'completed'
-                                ? 'text-green-400 font-medium'
-                                : task.status === 'in-progress'
-                                  ? 'text-yellow-400 font-medium'
-                                  : 'text-gray-400 font-medium'
-                            "
-                            class="text-sm"
-                            >{{ task.status }}</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                    <div class="flex space-x-2 ml-11" @click.stop>
-                      <button
-                        v-if="task.status === 'not-started'"
-                        @click="updateTaskStatus(task._id, 'in-progress')"
-                        class="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 font-medium"
-                      >
-                        Start
-                      </button>
-                      <button
-                        v-if="task.status === 'in-progress'"
-                        @click="updateTaskStatus(task._id, 'completed')"
-                        class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 font-medium"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        @click="deleteTask(task._id)"
-                        class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 font-medium"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div v-if="!isAdmin" class="space-y-6">
         <div
           v-if="myApplications.length > 0"
           class="bg-gray-800 rounded-lg shadow-lg p-6 h-fit max-h-[600px] overflow-y-auto"
@@ -445,290 +174,395 @@
             </div>
           </div>
         </div>
+
+        <div v-if="approvedApplications.length > 0" class="bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
+          <p class="text-gray-300 mb-6">Manage tasks for your approved projects.</p>
+
+          <div class="mb-6 space-y-3">
+            <div>
+              <label class="block text-sm text-gray-300 mb-2">Filter by Project</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="project in myProjects"
+                  :key="project._id"
+                  @click="selectedProjectFilter = project._id"
+                  :class="
+                    selectedProjectFilter === project._id
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  "
+                  class="px-3 py-1 rounded-md text-sm"
+                >
+                  {{ project.name }}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-300 mb-2">Filter by Status</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  @click="selectedStatusFilter = ''"
+                  :class="
+                    selectedStatusFilter === ''
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  "
+                  class="px-3 py-1 rounded-md text-sm"
+                >
+                  All
+                </button>
+                <button
+                  @click="selectedStatusFilter = 'not-started'"
+                  :class="
+                    selectedStatusFilter === 'not-started'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  "
+                  class="px-3 py-1 rounded-md text-sm"
+                >
+                  Not Started
+                </button>
+                <button
+                  @click="selectedStatusFilter = 'in-progress'"
+                  :class="
+                    selectedStatusFilter === 'in-progress'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  "
+                  class="px-3 py-1 rounded-md text-sm"
+                >
+                  In Progress
+                </button>
+                <button
+                  @click="selectedStatusFilter = 'completed'"
+                  :class="
+                    selectedStatusFilter === 'completed'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  "
+                  class="px-3 py-1 rounded-md text-sm"
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div v-for="app in getFilteredApplications()" :key="app._id">
+              <div class="mb-3 flex justify-between items-center">
+                <h3 class="text-white font-medium">{{ app.idea }}</h3>
+                <div class="flex gap-2">
+                  <form
+                    v-if="openTaskFormForApplicationId === app._id"
+                    @submit.prevent="createTask(app)"
+                    class="flex gap-2"
+                  >
+                    <input
+                      v-model="newTaskForm.name"
+                      type="text"
+                      required
+                      placeholder="Task name"
+                      class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    />
+                    <textarea
+                      v-model="newTaskForm.description"
+                      rows="1"
+                      placeholder="Description"
+                      class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    ></textarea>
+                    <button
+                      type="submit"
+                      :disabled="isLoadingTasks"
+                      class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      {{ isLoadingTasks ? 'Creating...' : 'Create' }}
+                    </button>
+                    <button
+                      type="button"
+                      @click="toggleTaskForm(app._id)"
+                      class="px-3 py-1 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                  <button
+                    v-else
+                    @click="toggleTaskForm(app._id)"
+                    class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 font-medium"
+                  >
+                    Add Task
+                  </button>
+                </div>
+              </div>
+
+              <div
+                v-if="
+                  allTasks.filter(
+                    (t) =>
+                      String(t.projectId?._id || t.projectId) ===
+                        String(app.projectId?._id || app.projectId) &&
+                      String(t.applicationId?._id || t.applicationId) === String(app._id),
+                  ).length === 0
+                "
+                class="text-gray-400 text-sm py-4 text-center"
+              >
+                No tasks yet for {{ app.idea }}. Create your first task!
+              </div>
+
+              <div v-else class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="bg-gray-700 border-b border-gray-600">
+                      <th class="px-6 py-4 text-left text-base font-medium text-gray-300">#</th>
+                      <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Task</th>
+                      <th class="px-6 py-4 text-center text-base font-medium text-gray-300">
+                        Status
+                      </th>
+                      <th class="px-6 py-4 text-left text-base font-medium text-gray-300">
+                        Description
+                      </th>
+                      <th class="px-6 py-4 text-center text-base font-medium text-gray-300">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(task, index) in getFilteredTasksForApp(app)"
+                      :key="task._id"
+                      @click="toggleTaskPopup(task)"
+                      class="bg-gray-600 border-b border-gray-700 hover:bg-gray-500 cursor-pointer transition"
+                    >
+                      <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                        {{ index + 1 }}
+                      </td>
+                      <td class="px-6 py-4 text-white font-medium text-base align-middle">
+                        {{ task.name }}
+                      </td>
+                      <td class="px-6 py-4 text-center align-middle">
+                        <span
+                          :class="
+                            task.status === 'completed'
+                              ? 'bg-green-600 text-white'
+                              : task.status === 'in-progress'
+                                ? 'bg-yellow-600 text-white'
+                                : 'bg-gray-500 text-white'
+                          "
+                          class="px-4 py-2 text-sm rounded font-medium"
+                        >
+                          {{ task.status }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                        {{ task.description || '-' }}
+                      </td>
+                      <td class="px-6 py-4 align-middle" @click.stop>
+                        <div class="flex items-center justify-center gap-2">
+                          <button
+                            v-if="task.status === 'not-started'"
+                            @click="updateTaskStatus(task._id, 'in-progress')"
+                            class="px-4 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 font-medium"
+                          >
+                            Start
+                          </button>
+                          <button
+                            v-if="task.status === 'in-progress'"
+                            @click="updateTaskStatus(task._id, 'completed')"
+                            class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 font-medium"
+                          >
+                            Complete
+                          </button>
+                          <button
+                            @click="deleteTask(task._id)"
+                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
         <h2 class="text-xl font-semibold text-white mb-4">All Tasks (Admin)</h2>
         <p class="text-gray-300 mb-6">View all tasks and user progress.</p>
 
-        <div class="mb-6">
-          <label class="block text-sm text-gray-300 mb-2">Filter by:</label>
-          <select
-            v-model="adminFilterType"
-            @change="handleFilterTypeChange"
-            class="w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="all">All Tasks</option>
-            <option value="user">By User</option>
-            <option value="application">By Application</option>
-            <option value="project">By Project</option>
-          </select>
-
-          <select
-            v-if="adminFilterType === 'user'"
-            v-model="adminSelectedUserId"
-            @change="loadAdminTasks"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select user...</option>
-            <option v-for="user in allUsers" :key="user._id" :value="user._id">
-              {{ user.name }} {{ user.lastname }} ({{ user.email }})
-            </option>
-          </select>
-
-          <select
-            v-if="adminFilterType === 'application'"
-            v-model="adminSelectedApplicationId"
-            @change="loadAdminTasks"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select application...</option>
-            <option v-for="app in allApplications" :key="app._id" :value="app._id">
-              {{ app.idea }} - {{ app.projectId?.name || 'Unknown' }}
-            </option>
-          </select>
-
-          <select
-            v-if="adminFilterType === 'project'"
-            v-model="adminSelectedProjectId"
-            @change="loadAdminTasks"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select project...</option>
-            <option v-for="project in allProjects" :key="project._id" :value="project._id">
-              {{ project.name }}
-            </option>
-          </select>
+        <div class="mb-6 space-y-3">
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Filter by User</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                @click="adminSelectedUserId = ''"
+                :class="
+                  adminSelectedUserId === ''
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                All Users
+              </button>
+              <button
+                v-for="user in allUsers"
+                :key="user._id"
+                @click="adminSelectedUserId = user._id"
+                :class="
+                  adminSelectedUserId === user._id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                {{ user.name }} {{ user.lastname }}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Filter by Project</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                @click="adminSelectedProjectId = ''"
+                :class="
+                  adminSelectedProjectId === ''
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                All Projects
+              </button>
+              <button
+                v-for="project in allProjects"
+                :key="project._id"
+                @click="adminSelectedProjectId = project._id"
+                :class="
+                  adminSelectedProjectId === project._id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                {{ project.name }}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Filter by Status</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                @click="adminSelectedStatusFilter = ''"
+                :class="
+                  adminSelectedStatusFilter === ''
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                All
+              </button>
+              <button
+                @click="adminSelectedStatusFilter = 'not-started'"
+                :class="
+                  adminSelectedStatusFilter === 'not-started'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                Not Started
+              </button>
+              <button
+                @click="adminSelectedStatusFilter = 'in-progress'"
+                :class="
+                  adminSelectedStatusFilter === 'in-progress'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                In Progress
+              </button>
+              <button
+                @click="adminSelectedStatusFilter = 'completed'"
+                :class="
+                  adminSelectedStatusFilter === 'completed'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                "
+                class="px-3 py-1 rounded-md text-sm"
+              >
+                Completed
+              </button>
+            </div>
+          </div>
         </div>
 
         <div v-if="isLoadingTasks" class="text-center text-gray-400">Loading tasks...</div>
 
         <div
-          v-else-if="
-            adminFilterType !== 'all' &&
-            displayedAdminTasks.length === 0 &&
-            (adminSelectedUserId || adminSelectedApplicationId || adminSelectedProjectId)
-          "
+          v-else-if="getFilteredAdminTasks().length === 0"
           class="text-center text-gray-400 py-8"
         >
           No tasks found.
         </div>
 
-        <div v-else class="space-y-4">
-          <div
-            v-for="app in allApplications.filter((a) => {
-              if (adminFilterType === 'all') return true
-              if (adminFilterType === 'application' && adminSelectedApplicationId) {
-                return String(a._id) === String(adminSelectedApplicationId)
-              }
-              if (adminFilterType === 'project' && adminSelectedProjectId) {
-                return String(a.projectId?._id || a.projectId) === String(adminSelectedProjectId)
-              }
-              if (adminFilterType === 'user' && adminSelectedUserId) {
-                return displayedAdminTasks.some(
-                  (t) =>
-                    String(t.applicationId?._id || t.applicationId) === String(a._id) &&
-                    String(t.createdBy?._id || t.createdBy) === String(adminSelectedUserId),
-                )
-              }
-              return displayedAdminTasks.some(
-                (t) => String(t.applicationId?._id || t.applicationId) === String(a._id),
-              )
-            })"
-            :key="app._id"
-            class="mb-4"
-          >
-            <div class="bg-gray-700 rounded-lg overflow-hidden">
-              <div
-                @click="
-                  expandedAdminApplications.includes(String(app._id))
-                    ? (expandedAdminApplications = expandedAdminApplications.filter(
-                        (id) => id !== String(app._id),
-                      ))
-                    : expandedAdminApplications.push(String(app._id))
-                "
-                class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-600 transition"
+        <div v-else class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-gray-700 border-b border-gray-600">
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">#</th>
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Task</th>
+                <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Status</th>
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Project</th>
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">User</th>
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(task, index) in getFilteredAdminTasks()"
+                :key="task._id"
+                @click="toggleTaskPopup(task)"
+                class="bg-gray-600 border-b border-gray-700 hover:bg-gray-500 cursor-pointer transition"
               >
-                <div class="flex-1">
-                  <h3 class="text-lg font-medium text-white mb-1">
-                    {{ app.idea }} - {{ app.projectId?.name || 'Unknown' }}
-                  </h3>
-                  <div class="flex items-center gap-4">
-                    <span class="text-gray-300 text-sm">
-                      Tasks:
-                      {{
-                        displayedAdminTasks.filter(
-                          (t) =>
-                            String(t.applicationId?._id || t.applicationId) === String(app._id),
-                        ).length
-                      }}
-                    </span>
-                    <span class="text-gray-300 text-sm">
-                      Progress:
-                      {{
-                        Math.round(
-                          (displayedAdminTasks.filter(
-                            (t) =>
-                              String(t.applicationId?._id || t.applicationId) === String(app._id) &&
-                              t.status === 'completed',
-                          ).length /
-                            (displayedAdminTasks.filter(
-                              (t) =>
-                                String(t.applicationId?._id || t.applicationId) === String(app._id),
-                            ).length || 1)) *
-                            100,
-                        )
-                      }}%
-                    </span>
-                    <span class="text-gray-400 text-sm">
-                      User:
-                      {{
-                        displayedAdminTasks.find(
-                          (t) =>
-                            String(t.applicationId?._id || t.applicationId) === String(app._id),
-                        )?.createdBy?.email ||
-                        app.createdBy?.email ||
-                        'Unknown'
-                      }}
-                    </span>
-                  </div>
-                </div>
-                <span class="text-gray-400 text-xl">
-                  {{ expandedAdminApplications.includes(String(app._id)) ? '▼' : '▶' }}
-                </span>
-              </div>
-
-              <div
-                v-if="expandedAdminApplications.includes(String(app._id))"
-                class="p-4 border-t border-gray-600"
-              >
-                <template
-                  v-for="(task, index) in displayedAdminTasks.filter(
-                    (t) => String(t.applicationId?._id || t.applicationId) === String(app._id),
-                  )"
-                  :key="task._id"
-                >
-                  <div v-if="index === 0" class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-gray-300 text-sm">Progress:</span>
-                      <span class="text-gray-300 text-sm">
-                        {{
-                          Math.round(
-                            (displayedAdminTasks.filter(
-                              (t) =>
-                                String(t.applicationId?._id || t.applicationId) ===
-                                  String(app._id) && t.status === 'completed',
-                            ).length /
-                              (displayedAdminTasks.filter(
-                                (t) =>
-                                  String(t.applicationId?._id || t.applicationId) ===
-                                  String(app._id),
-                              ).length || 1)) *
-                              100,
-                          )
-                        }}% ({{
-                          displayedAdminTasks.filter(
-                            (t) =>
-                              String(t.applicationId?._id || t.applicationId) === String(app._id) &&
-                              t.status === 'completed',
-                          ).length
-                        }}/{{
-                          displayedAdminTasks.filter(
-                            (t) =>
-                              String(t.applicationId?._id || t.applicationId) === String(app._id),
-                          ).length
-                        }})
-                      </span>
-                    </div>
-                    <div class="w-full bg-gray-600 rounded-full h-2">
-                      <div
-                        class="bg-green-500 h-2 rounded-full"
-                        :style="{
-                          width:
-                            Math.round(
-                              (displayedAdminTasks.filter(
-                                (t) =>
-                                  String(t.applicationId?._id || t.applicationId) ===
-                                    String(app._id) && t.status === 'completed',
-                              ).length /
-                                (displayedAdminTasks.filter(
-                                  (t) =>
-                                    String(t.applicationId?._id || t.applicationId) ===
-                                    String(app._id),
-                                ).length || 1)) *
-                                100,
-                            ) + '%',
-                        }"
-                      ></div>
-                    </div>
-                  </div>
-                </template>
-
-                <div
-                  v-if="
-                    displayedAdminTasks.filter(
-                      (t) => String(t.applicationId?._id || t.applicationId) === String(app._id),
-                    ).length === 0
-                  "
-                  class="text-gray-400 text-sm py-4 text-center"
-                >
-                  No tasks yet.
-                </div>
-
-                <div v-else class="space-y-3">
-                  <div
-                    v-for="(task, index) in displayedAdminTasks.filter(
-                      (t) => String(t.applicationId?._id || t.applicationId) === String(app._id),
-                    )"
-                    :key="task._id"
-                    @click="toggleTaskPopup(task)"
-                    class="bg-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-500 transition"
+                <td class="px-6 py-4 text-gray-300 text-base align-middle">{{ index + 1 }}</td>
+                <td class="px-6 py-4 text-white font-medium text-base align-middle">
+                  {{ task.name }}
+                </td>
+                <td class="px-6 py-4 text-center align-middle">
+                  <span
+                    :class="
+                      task.status === 'completed'
+                        ? 'bg-green-600 text-white'
+                        : task.status === 'in-progress'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-gray-500 text-white'
+                    "
+                    class="px-4 py-2 text-sm rounded font-medium"
                   >
-                    <div class="flex items-start gap-3 mb-3">
-                      <div
-                        class="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                      >
-                        {{ index + 1 }}
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-white font-semibold text-base mb-2">{{ task.name }}</p>
-                        <p
-                          v-if="task.description"
-                          class="text-gray-300 text-sm mb-3 leading-relaxed"
-                        >
-                          {{ task.description }}
-                        </p>
-                        <div class="space-y-1.5">
-                          <p class="text-gray-400 text-sm">
-                            <span class="font-medium">User:</span>
-                            {{ task.createdBy?.email || 'Unknown' }}
-                          </p>
-                          <p class="text-gray-400 text-sm">
-                            <span class="font-medium">Project:</span>
-                            {{ task.projectId?.name || 'Unknown' }}
-                          </p>
-                          <div class="flex items-center gap-2 mt-2">
-                            <span class="text-gray-400 text-sm font-medium">Status:</span>
-                            <span
-                              :class="
-                                task.status === 'completed'
-                                  ? 'text-green-400 font-medium'
-                                  : task.status === 'in-progress'
-                                    ? 'text-yellow-400 font-medium'
-                                    : 'text-gray-400 font-medium'
-                              "
-                              class="text-sm"
-                              >{{ task.status }}</span
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                    {{ task.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                  {{ task.projectId?.name || 'Unknown' }}
+                </td>
+                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                  {{ task.createdBy?.name || task.createdBy?.email || 'Unknown' }}
+                </td>
+                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                  {{ task.description || '-' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -827,17 +661,16 @@ var selectedProjectId = ref('')
 var openTaskFormForApplicationId = ref('')
 var showTaskPopup = ref(false)
 var selectedTask = ref(null)
-var expandedApplications = ref([])
-var expandedAdminApplications = ref([])
 var allProjects = ref([])
 var allApplications = ref([])
 var showApplicationForm = ref(false)
 var activeApplicationTab = ref('pending')
-var adminFilterType = ref('all')
 var adminSelectedUserId = ref('')
-var adminSelectedApplicationId = ref('')
 var adminSelectedProjectId = ref('')
+var adminSelectedStatusFilter = ref('')
 var allUsers = ref([])
+var selectedProjectFilter = ref('')
+var selectedStatusFilter = ref('')
 
 var applicationForm = reactive({
   name: '',
@@ -880,6 +713,34 @@ function toggleTaskPopup(task) {
   showTaskPopup.value = !!task
 }
 
+function getFilteredApplications() {
+  if (!selectedProjectFilter.value) {
+    return []
+  }
+  return approvedApplications.value.filter(function (app) {
+    var appProjectId = app.projectId?._id || app.projectId
+    return String(appProjectId) === String(selectedProjectFilter.value)
+  })
+}
+
+function getFilteredTasksForApp(app) {
+  var appProjectId = app.projectId?._id || app.projectId
+  var appId = app._id
+  var tasks = allTasks.value.filter(function (task) {
+    var taskProjectId = task.projectId?._id || task.projectId
+    var taskApplicationId = task.applicationId?._id || task.applicationId
+    return (
+      String(taskProjectId) === String(appProjectId) && String(taskApplicationId) === String(appId)
+    )
+  })
+  if (selectedStatusFilter.value) {
+    tasks = tasks.filter(function (task) {
+      return task.status === selectedStatusFilter.value
+    })
+  }
+  return tasks
+}
+
 var allTasks = ref([])
 
 async function loadTasks() {
@@ -898,36 +759,34 @@ var displayedAdminTasks = ref([])
 async function loadAdminTasks() {
   isLoadingTasks.value = true
   try {
-    if (adminFilterType.value === 'all') {
-      var response = await backend.get('/api/tasks')
-      displayedAdminTasks.value = response.data || []
-    } else {
-      var params = {}
-      if (adminFilterType.value === 'user' && adminSelectedUserId.value) {
-        params = { userId: adminSelectedUserId.value }
-      }
-      if (adminFilterType.value === 'application' && adminSelectedApplicationId.value) {
-        params = { applicationId: adminSelectedApplicationId.value }
-      }
-      if (adminFilterType.value === 'project' && adminSelectedProjectId.value) {
-        params = { projectId: adminSelectedProjectId.value }
-      }
-      var response = await backend.get('/api/tasks/by-user', { params })
-      displayedAdminTasks.value = response.data || []
-    }
+    var response = await backend.get('/api/tasks')
+    displayedAdminTasks.value = response.data || []
   } catch (e) {
     errorMessage.value = 'Error loading tasks'
   }
   isLoadingTasks.value = false
 }
 
-function handleFilterTypeChange() {
-  adminSelectedUserId.value = ''
-  adminSelectedApplicationId.value = ''
-  adminSelectedProjectId.value = ''
-  if (adminFilterType.value === 'all') {
-    loadAdminTasks()
+function getFilteredAdminTasks() {
+  var tasks = displayedAdminTasks.value
+  if (adminSelectedUserId.value) {
+    tasks = tasks.filter(function (task) {
+      var taskUserId = task.createdBy?._id || task.createdBy
+      return String(taskUserId) === String(adminSelectedUserId.value)
+    })
   }
+  if (adminSelectedProjectId.value) {
+    tasks = tasks.filter(function (task) {
+      var taskProjectId = task.projectId?._id || task.projectId
+      return String(taskProjectId) === String(adminSelectedProjectId.value)
+    })
+  }
+  if (adminSelectedStatusFilter.value) {
+    tasks = tasks.filter(function (task) {
+      return task.status === adminSelectedStatusFilter.value
+    })
+  }
+  return tasks
 }
 
 async function loadAllData() {
@@ -1032,6 +891,9 @@ onMounted(async () => {
     await loadAdminTasks()
   } else {
     await loadTasks()
+    if (myProjects.value.length > 0 && !selectedProjectFilter.value) {
+      selectedProjectFilter.value = myProjects.value[0]._id
+    }
   }
 })
 </script>
