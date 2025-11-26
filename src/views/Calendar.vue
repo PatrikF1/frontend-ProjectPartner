@@ -140,20 +140,6 @@
 
           <form @submit.prevent="addEvent" class="space-y-4">
             <div>
-              <label class="block text-sm text-gray-300 mb-1">Select Task (optional)</label>
-              <select
-                v-model="eventForm.taskId"
-                @change="handleTaskSelect"
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Create new event</option>
-                <option v-for="task in myTasks" :key="task._id" :value="task._id">
-                  {{ task.name }} - {{ task.projectId?.name || 'Unknown Project' }}
-                </option>
-              </select>
-            </div>
-
-            <div>
               <label class="block text-sm text-gray-300 mb-1">Event Title *</label>
               <input
                 v-model="eventForm.title"
@@ -237,7 +223,6 @@ var showAddEventForm = ref(false)
 var selectedEvent = ref(null)
 var events = ref([])
 var myProjects = ref([])
-var myTasks = ref([])
 
 var eventForm = reactive({
   title: '',
@@ -363,33 +348,6 @@ async function loadProjects() {
   }
 }
 
-async function loadTasks() {
-  try {
-    var response = await backend.get('/api/tasks')
-    if (isAdmin.value) {
-      myTasks.value = response.data || []
-    } else {
-      var userId = authStore.user?._id
-      myTasks.value = (response.data || []).filter(
-        (task) => String(task.createdBy?._id || task.createdBy) === String(userId),
-      )
-    }
-  } catch (e) {
-    errorMessage.value = 'Error loading tasks'
-  }
-}
-
-function handleTaskSelect() {
-  if (!eventForm.taskId) {
-    eventForm.projectId = ''
-    return
-  }
-  var selectedTask = myTasks.value.find((t) => String(t._id) === String(eventForm.taskId))
-  if (selectedTask && (selectedTask.projectId?._id || selectedTask.projectId)) {
-    eventForm.projectId = selectedTask.projectId._id || selectedTask.projectId
-  }
-}
-
 async function addEvent() {
   isLoading.value = true
   try {
@@ -432,7 +390,6 @@ onMounted(async () => {
   var today = new Date()
   eventForm.date = formatDateForInput(today)
   await loadProjects()
-  await loadTasks()
   await loadEvents()
 })
 </script>

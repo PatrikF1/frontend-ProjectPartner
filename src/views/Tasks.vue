@@ -257,35 +257,53 @@
                   <form
                     v-if="openTaskFormForApplicationId === app._id"
                     @submit.prevent="createTask(app)"
-                    class="flex gap-2"
+                    class="flex flex-col gap-2"
                   >
-                    <input
-                      v-model="newTaskForm.name"
-                      type="text"
-                      required
-                      placeholder="Task name"
-                      class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                    />
+                    <div class="flex gap-2">
+                      <input
+                        v-model="newTaskForm.name"
+                        type="text"
+                        required
+                        placeholder="Task name"
+                        class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      />
+                      <input
+                        v-model="newTaskForm.deadline"
+                        type="date"
+                        placeholder="Deadline (optional)"
+                        class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      />
+                      <select
+                        v-model="newTaskForm.priority"
+                        class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
                     <textarea
                       v-model="newTaskForm.description"
                       rows="1"
                       placeholder="Description"
                       class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                     ></textarea>
-                    <button
-                      type="submit"
-                      :disabled="isLoadingTasks"
-                      class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      {{ isLoadingTasks ? 'Creating...' : 'Create' }}
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleTaskForm(app._id)"
-                      class="px-3 py-1 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700"
-                    >
-                      Cancel
-                    </button>
+                    <div class="flex gap-2">
+                      <button
+                        type="submit"
+                        :disabled="isLoadingTasks"
+                        class="px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        {{ isLoadingTasks ? 'Creating...' : 'Create' }}
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleTaskForm(app._id)"
+                        class="px-3 py-1 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </form>
                   <button
                     v-else
@@ -324,6 +342,12 @@
                         Description
                       </th>
                       <th class="px-6 py-4 text-center text-base font-medium text-gray-300">
+                        Priority
+                      </th>
+                      <th class="px-6 py-4 text-left text-base font-medium text-gray-300">
+                        Deadline
+                      </th>
+                      <th class="px-6 py-4 text-center text-base font-medium text-gray-300">
                         Actions
                       </th>
                     </tr>
@@ -357,6 +381,23 @@
                       </td>
                       <td class="px-6 py-4 text-gray-300 text-base align-middle">
                         {{ task.description || '-' }}
+                      </td>
+                      <td class="px-6 py-4 text-center align-middle">
+                        <span
+                          :class="
+                            task.priority === 'high'
+                              ? 'bg-red-600 text-white'
+                              : task.priority === 'medium'
+                                ? 'bg-yellow-600 text-white'
+                                : 'bg-green-600 text-white'
+                          "
+                          class="px-3 py-1 text-xs rounded font-medium"
+                        >
+                          {{ task.priority || 'medium' }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                        {{ formatDeadline(task.deadline) }}
                       </td>
                       <td class="px-6 py-4 align-middle" @click.stop>
                         <div class="flex items-center justify-center gap-2">
@@ -524,6 +565,8 @@
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Project</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">User</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Description</th>
+                <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Priority</th>
+                <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Deadline</th>
               </tr>
             </thead>
             <tbody>
@@ -559,6 +602,23 @@
                 </td>
                 <td class="px-6 py-4 text-gray-300 text-base align-middle">
                   {{ task.description || '-' }}
+                </td>
+                <td class="px-6 py-4 text-center align-middle">
+                  <span
+                    :class="
+                      task.priority === 'high'
+                        ? 'bg-red-600 text-white'
+                        : task.priority === 'medium'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-green-600 text-white'
+                    "
+                    class="px-3 py-1 text-xs rounded font-medium"
+                  >
+                    {{ task.priority || 'medium' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                  {{ formatDeadline(task.deadline) }}
                 </td>
               </tr>
             </tbody>
@@ -612,6 +672,31 @@
               <label class="text-gray-400 text-sm">Project</label>
               <p class="text-white mt-1">
                 {{ selectedTask.projectId?.name || 'Unknown' }}
+              </p>
+            </div>
+
+            <div>
+              <label class="text-gray-400 text-sm">Priority</label>
+              <p class="mt-1">
+                <span
+                  :class="
+                    selectedTask.priority === 'high'
+                      ? 'bg-red-600 text-white'
+                      : selectedTask.priority === 'medium'
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-green-600 text-white'
+                  "
+                  class="px-3 py-1 text-sm rounded font-medium"
+                >
+                  {{ selectedTask.priority || 'medium' }}
+                </span>
+              </p>
+            </div>
+
+            <div v-if="selectedTask.deadline">
+              <label class="text-gray-400 text-sm">Deadline</label>
+              <p class="text-white mt-1">
+                {{ formatDeadline(selectedTask.deadline) }}
               </p>
             </div>
 
@@ -680,6 +765,8 @@ var applicationForm = reactive({
 var newTaskForm = reactive({
   name: '',
   description: '',
+  deadline: '',
+  priority: 'medium',
 })
 
 var isAdmin = computed(() => {
@@ -706,6 +793,8 @@ function toggleTaskForm(applicationId) {
     openTaskFormForApplicationId.value === applicationId ? '' : applicationId
   newTaskForm.name = ''
   newTaskForm.description = ''
+  newTaskForm.deadline = ''
+  newTaskForm.priority = 'medium'
 }
 
 function toggleTaskPopup(task) {
@@ -742,6 +831,16 @@ function getFilteredTasksForApp(app) {
 }
 
 var allTasks = ref([])
+var calendarEvents = ref([])
+
+async function loadCalendarEvents() {
+  try {
+    var response = await backend.get('/api/calendar/events')
+    calendarEvents.value = response.data || []
+  } catch (e) {
+    errorMessage.value = 'Error loading calendar events'
+  }
+}
 
 async function loadTasks() {
   isLoadingTasks.value = true
@@ -752,6 +851,15 @@ async function loadTasks() {
     errorMessage.value = 'Error loading tasks'
   }
   isLoadingTasks.value = false
+}
+
+function formatDeadline(deadline) {
+  if (!deadline) return '-'
+  if (typeof deadline === 'string') {
+    return deadline.split('T')[0]
+  }
+  var date = new Date(deadline)
+  return date.toISOString().split('T')[0]
 }
 
 var displayedAdminTasks = ref([])
@@ -838,15 +946,32 @@ async function submitApplication() {
 async function createTask(app) {
   isLoadingTasks.value = true
   try {
-    await backend.post('/api/tasks', {
+    var response = await backend.post('/api/tasks', {
       projectId: app.projectId._id || app.projectId,
       applicationId: app._id,
       name: newTaskForm.name,
       description: newTaskForm.description,
       status: 'in-progress',
+      deadline: newTaskForm.deadline || null,
+      priority: newTaskForm.priority || 'medium',
     })
+    var createdTask = response.data
+
+    if (newTaskForm.deadline) {
+      await backend.post('/api/calendar/events', {
+        title: newTaskForm.name,
+        date: newTaskForm.deadline,
+        description: newTaskForm.description || 'Task deadline',
+        projectId: app.projectId._id || app.projectId,
+        taskId: createdTask._id,
+      })
+      await loadCalendarEvents()
+    }
+
     newTaskForm.name = ''
     newTaskForm.description = ''
+    newTaskForm.deadline = ''
+    newTaskForm.priority = 'medium'
     openTaskFormForApplicationId.value = ''
     await loadTasks()
   } catch (e) {
@@ -873,6 +998,15 @@ async function deleteTask(taskId) {
   if (!confirm('Delete this task?')) return
   isLoadingTasks.value = true
   try {
+    var event = calendarEvents.value.find(function (e) {
+      var eventTaskId = e.taskId?._id || e.taskId || e.task?._id || e.task
+      return eventTaskId && String(eventTaskId) === String(taskId)
+    })
+    if (event) {
+      await backend.delete('/api/calendar/events/' + event._id)
+      await loadCalendarEvents()
+    }
+
     await backend.delete('/api/tasks/' + taskId)
     if (selectedTask.value && selectedTask.value._id === taskId) {
       showTaskPopup.value = false
@@ -887,6 +1021,7 @@ async function deleteTask(taskId) {
 
 onMounted(async () => {
   await loadAllData()
+  await loadCalendarEvents()
   if (isAdmin.value) {
     await loadAdminTasks()
   } else {
