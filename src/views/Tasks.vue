@@ -179,6 +179,15 @@
           <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
           <p class="text-gray-300 mb-6">Manage tasks for your approved projects.</p>
 
+          <div class="mb-6">
+            <input
+              v-model="taskSearchQuery"
+              type="text"
+              placeholder="Search tasks by name or description..."
+              class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
           <div class="mb-6 space-y-3">
             <div>
               <label class="block text-sm text-gray-300 mb-2">Filter by Project</label>
@@ -435,6 +444,15 @@
       <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
         <h2 class="text-xl font-semibold text-white mb-4">All Tasks (Admin)</h2>
         <p class="text-gray-300 mb-6">View all tasks and user progress.</p>
+
+        <div class="mb-6">
+          <input
+            v-model="taskSearchQuery"
+            type="text"
+            placeholder="Search tasks by name or description..."
+            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
         <div class="mb-6 space-y-3">
           <div>
@@ -756,6 +774,7 @@ var adminSelectedStatusFilter = ref('')
 var allUsers = ref([])
 var selectedProjectFilter = ref('')
 var selectedStatusFilter = ref('')
+var taskSearchQuery = ref('')
 
 var applicationForm = reactive({
   name: '',
@@ -827,6 +846,14 @@ function getFilteredTasksForApp(app) {
       return task.status === selectedStatusFilter.value
     })
   }
+  if (taskSearchQuery.value) {
+    var search = taskSearchQuery.value.toLowerCase()
+    tasks = tasks.filter(function (task) {
+      var name = (task.name || '').toLowerCase()
+      var description = (task.description || '').toLowerCase()
+      return name.includes(search) || description.includes(search)
+    })
+  }
   return tasks
 }
 
@@ -892,6 +919,14 @@ function getFilteredAdminTasks() {
   if (adminSelectedStatusFilter.value) {
     tasks = tasks.filter(function (task) {
       return task.status === adminSelectedStatusFilter.value
+    })
+  }
+  if (taskSearchQuery.value) {
+    var search = taskSearchQuery.value.toLowerCase()
+    tasks = tasks.filter(function (task) {
+      var name = (task.name || '').toLowerCase()
+      var description = (task.description || '').toLowerCase()
+      return name.includes(search) || description.includes(search)
     })
   }
   return tasks

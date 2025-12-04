@@ -36,10 +36,12 @@
             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select type</option>
-            <option value="workspace">Workspace</option>
-            <option value="project-space">Project Space</option>
-            <option value="team-space">Team Space</option>
-            <option value="meeting-room">Meeting Room</option>
+            <option value="project">Project</option>
+            <option value="feature">Feature</option>
+            <option value="bug/fix">Bug/Fix</option>
+            <option value="task">Task</option>
+            <option value="application">Application</option>
+            <option value="other">Other</option>
           </select>
 
           <input
@@ -104,10 +106,12 @@
             class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select type...</option>
-            <option value="workspace">Workspace</option>
-            <option value="project-space">Project Space</option>
-            <option value="team-space">Team Space</option>
-            <option value="meeting-room">Meeting Room</option>
+            <option value="project">Project</option>
+            <option value="feature">Feature</option>
+            <option value="bug/fix">Bug/Fix</option>
+            <option value="task">Task</option>
+            <option value="application">Application</option>
+            <option value="other">Other</option>
           </select>
 
           <select
@@ -200,7 +204,19 @@
             <p class="text-gray-300 text-sm mb-3">{{ project.description }}</p>
 
             <div class="flex items-center space-x-4 text-sm text-gray-400 mb-3">
-              <span class="text-indigo-400">{{ project.type }}</span>
+              <span
+                class="px-2 py-1 rounded text-xs font-medium"
+                :class="{
+                  'bg-blue-500/20 text-blue-400': project.type === 'project',
+                  'bg-green-500/20 text-green-400': project.type === 'feature',
+                  'bg-red-500/20 text-red-400': project.type === 'bug/fix',
+                  'bg-purple-500/20 text-purple-400': project.type === 'task',
+                  'bg-yellow-500/20 text-yellow-400': project.type === 'application',
+                  'bg-gray-500/20 text-gray-400': project.type === 'other' || !project.type,
+                }"
+              >
+                {{ project.type || 'Other' }}
+              </span>
               <span v-if="project.capacity" class="text-green-400">
                 Capacity: {{ project.capacity }}
               </span>
@@ -255,10 +271,12 @@
               required
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="workspace">Workspace</option>
-              <option value="project-space">Project Space</option>
-              <option value="team-space">Team Space</option>
-              <option value="meeting-room">Meeting Room</option>
+              <option value="project">Project</option>
+              <option value="feature">Feature</option>
+              <option value="bug/fix">Bug/Fix</option>
+              <option value="task">Task</option>
+              <option value="application">Application</option>
+              <option value="other">Other</option>
             </select>
 
             <input
