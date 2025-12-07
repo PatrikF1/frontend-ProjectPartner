@@ -112,7 +112,7 @@
                 @click="deleteEvent(selectedEvent._id)"
                 class="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
-                Delete
+                Remove
               </button>
             </div>
           </div>
@@ -374,14 +374,14 @@ async function addEvent() {
 }
 
 async function deleteEvent(eventId) {
-  if (!confirm('Delete this event?')) return
+  if (!confirm('Remove from calendar?')) return
   isLoading.value = true
   try {
     await backend.delete('/api/calendar/events/' + eventId)
     selectedEvent.value = null
     await loadEvents()
   } catch (e) {
-    errorMessage.value = 'Error deleting event'
+    errorMessage.value = 'Error removing event from calendar'
   }
   isLoading.value = false
 }

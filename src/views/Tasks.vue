@@ -179,83 +179,49 @@
           <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
           <p class="text-gray-300 mb-6">Manage tasks for your approved projects.</p>
 
-          <div class="mb-6">
-            <input
-              v-model="taskSearchQuery"
-              type="text"
-              placeholder="Search tasks by name or description..."
-              class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div class="mb-6 space-y-3">
-            <div>
-              <label class="block text-sm text-gray-300 mb-2">Filter by Project</label>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="project in myProjects"
-                  :key="project._id"
-                  @click="selectedProjectFilter = project._id"
-                  :class="
-                    selectedProjectFilter === project._id
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  "
-                  class="px-3 py-1 rounded-md text-sm"
+          <div class="mb-6 bg-gray-700 rounded-lg p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Filter by Project</label>
+                <select
+                  v-model="selectedProjectFilter"
+                  class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  {{ project.name }}
-                </button>
+                  <option value="">All Projects</option>
+                  <option v-for="project in myProjects" :key="project._id" :value="project._id">
+                    {{ project.name }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Filter by Status</label>
+                <select
+                  v-model="selectedStatusFilter"
+                  class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">All Status</option>
+                  <option value="not-started">Not Started</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-2">Search</label>
+                <input
+                  v-model="taskSearchQuery"
+                  type="text"
+                  placeholder="Search tasks..."
+                  class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
             </div>
-            <div>
-              <label class="block text-sm text-gray-300 mb-2">Filter by Status</label>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  @click="selectedStatusFilter = ''"
-                  :class="
-                    selectedStatusFilter === ''
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  "
-                  class="px-3 py-1 rounded-md text-sm"
-                >
-                  All
-                </button>
-                <button
-                  @click="selectedStatusFilter = 'not-started'"
-                  :class="
-                    selectedStatusFilter === 'not-started'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  "
-                  class="px-3 py-1 rounded-md text-sm"
-                >
-                  Not Started
-                </button>
-                <button
-                  @click="selectedStatusFilter = 'in-progress'"
-                  :class="
-                    selectedStatusFilter === 'in-progress'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  "
-                  class="px-3 py-1 rounded-md text-sm"
-                >
-                  In Progress
-                </button>
-                <button
-                  @click="selectedStatusFilter = 'completed'"
-                  :class="
-                    selectedStatusFilter === 'completed'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  "
-                  class="px-3 py-1 rounded-md text-sm"
-                >
-                  Completed
-                </button>
-              </div>
-            </div>
+            <button
+              v-if="selectedProjectFilter || selectedStatusFilter || taskSearchQuery"
+              @click="clearMemberFilters"
+              class="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-500"
+            >
+              Clear Filters
+            </button>
           </div>
 
           <div class="space-y-4">
@@ -325,14 +291,7 @@
               </div>
 
               <div
-                v-if="
-                  allTasks.filter(
-                    (t) =>
-                      String(t.projectId?._id || t.projectId) ===
-                        String(app.projectId?._id || app.projectId) &&
-                      String(t.applicationId?._id || t.applicationId) === String(app._id),
-                  ).length === 0
-                "
+                v-if="getFilteredTasksForApp(app).length === 0"
                 class="text-gray-400 text-sm py-4 text-center"
               >
                 No tasks yet for {{ app.idea }}. Create your first task!
@@ -425,10 +384,10 @@
                             Complete
                           </button>
                           <button
-                            @click="deleteTask(task._id)"
+                            @click="archiveTask(task._id)"
                             class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium"
                           >
-                            Delete
+                            Archive
                           </button>
                         </div>
                       </td>
@@ -445,123 +404,73 @@
         <h2 class="text-xl font-semibold text-white mb-4">All Tasks (Admin)</h2>
         <p class="text-gray-300 mb-6">View all tasks and user progress.</p>
 
-        <div class="mb-6">
-          <input
-            v-model="taskSearchQuery"
-            type="text"
-            placeholder="Search tasks by name or description..."
-            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
-        <div class="mb-6 space-y-3">
-          <div>
-            <label class="block text-sm text-gray-300 mb-2">Filter by User</label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                @click="adminSelectedUserId = ''"
-                :class="
-                  adminSelectedUserId === ''
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
+        <div class="mb-6 bg-gray-700 rounded-lg p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Filter by Project</label>
+              <select
+                v-model="adminSelectedProjectId"
+                class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                All Users
-              </button>
-              <button
-                v-for="user in allUsers"
-                :key="user._id"
-                @click="adminSelectedUserId = user._id"
-                :class="
-                  adminSelectedUserId === user._id
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
+                <option value="">All Projects</option>
+                <option v-for="project in allProjects" :key="project._id" :value="project._id">
+                  {{ project.name }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Filter by Member</label>
+              <select
+                v-model="adminSelectedUserId"
+                class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                {{ user.name }} {{ user.lastname }}
-              </button>
+                <option value="">All Members</option>
+                <option
+                  v-for="user in allUsers.filter((u) => !u.isAdmin)"
+                  :key="user._id"
+                  :value="user._id"
+                >
+                  {{ user.name }} {{ user.lastname }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Filter by Status</label>
+              <select
+                v-model="adminSelectedStatusFilter"
+                class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">All Status</option>
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Filter by Priority</label>
+              <select
+                v-model="adminSelectedPriorityFilter"
+                class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">All Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
             </div>
           </div>
-          <div>
-            <label class="block text-sm text-gray-300 mb-2">Filter by Project</label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                @click="adminSelectedProjectId = ''"
-                :class="
-                  adminSelectedProjectId === ''
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                All Projects
-              </button>
-              <button
-                v-for="project in allProjects"
-                :key="project._id"
-                @click="adminSelectedProjectId = project._id"
-                :class="
-                  adminSelectedProjectId === project._id
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                {{ project.name }}
-              </button>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm text-gray-300 mb-2">Filter by Status</label>
-            <div class="flex flex-wrap gap-2">
-              <button
-                @click="adminSelectedStatusFilter = ''"
-                :class="
-                  adminSelectedStatusFilter === ''
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                All
-              </button>
-              <button
-                @click="adminSelectedStatusFilter = 'not-started'"
-                :class="
-                  adminSelectedStatusFilter === 'not-started'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                Not Started
-              </button>
-              <button
-                @click="adminSelectedStatusFilter = 'in-progress'"
-                :class="
-                  adminSelectedStatusFilter === 'in-progress'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                In Progress
-              </button>
-              <button
-                @click="adminSelectedStatusFilter = 'completed'"
-                :class="
-                  adminSelectedStatusFilter === 'completed'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                "
-                class="px-3 py-1 rounded-md text-sm"
-              >
-                Completed
-              </button>
-            </div>
-          </div>
+          <button
+            v-if="
+              adminSelectedProjectId ||
+              adminSelectedUserId ||
+              adminSelectedStatusFilter ||
+              adminSelectedPriorityFilter
+            "
+            @click="clearAdminFilters"
+            class="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-500"
+          >
+            Clear Filters
+          </button>
         </div>
 
         <div v-if="isLoadingTasks" class="text-center text-gray-400">Loading tasks...</div>
@@ -734,10 +643,10 @@
                 Complete Task
               </button>
               <button
-                @click="deleteTask(selectedTask._id)"
+                @click="archiveTask(selectedTask._id)"
                 class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
-                Delete Task
+                Archive Task
               </button>
             </div>
           </div>
@@ -771,6 +680,7 @@ var activeApplicationTab = ref('pending')
 var adminSelectedUserId = ref('')
 var adminSelectedProjectId = ref('')
 var adminSelectedStatusFilter = ref('')
+var adminSelectedPriorityFilter = ref('')
 var allUsers = ref([])
 var selectedProjectFilter = ref('')
 var selectedStatusFilter = ref('')
@@ -823,7 +733,7 @@ function toggleTaskPopup(task) {
 
 function getFilteredApplications() {
   if (!selectedProjectFilter.value) {
-    return []
+    return approvedApplications.value
   }
   return approvedApplications.value.filter(function (app) {
     var appProjectId = app.projectId?._id || app.projectId
@@ -835,6 +745,7 @@ function getFilteredTasksForApp(app) {
   var appProjectId = app.projectId?._id || app.projectId
   var appId = app._id
   var tasks = allTasks.value.filter(function (task) {
+    if (task.isArchived) return false
     var taskProjectId = task.projectId?._id || task.projectId
     var taskApplicationId = task.applicationId?._id || task.applicationId
     return (
@@ -873,9 +784,11 @@ async function loadTasks() {
   isLoadingTasks.value = true
   try {
     var response = await backend.get('/api/tasks')
-    allTasks.value = response.data
+    allTasks.value = response.data || []
+    console.log('Loaded tasks:', allTasks.value.length, allTasks.value)
   } catch (e) {
     errorMessage.value = 'Error loading tasks'
+    console.error('Error loading tasks:', e)
   }
   isLoadingTasks.value = false
 }
@@ -895,7 +808,10 @@ async function loadAdminTasks() {
   isLoadingTasks.value = true
   try {
     var response = await backend.get('/api/tasks')
-    displayedAdminTasks.value = response.data || []
+    displayedAdminTasks.value = (response.data || []).filter(function (task) {
+      return !task.isArchived
+    })
+    console.log('Loaded admin tasks:', displayedAdminTasks.value.length)
   } catch (e) {
     errorMessage.value = 'Error loading tasks'
   }
@@ -921,6 +837,11 @@ function getFilteredAdminTasks() {
       return task.status === adminSelectedStatusFilter.value
     })
   }
+  if (adminSelectedPriorityFilter.value) {
+    tasks = tasks.filter(function (task) {
+      return task.priority === adminSelectedPriorityFilter.value
+    })
+  }
   if (taskSearchQuery.value) {
     var search = taskSearchQuery.value.toLowerCase()
     tasks = tasks.filter(function (task) {
@@ -930,6 +851,19 @@ function getFilteredAdminTasks() {
     })
   }
   return tasks
+}
+
+function clearAdminFilters() {
+  adminSelectedProjectId.value = ''
+  adminSelectedUserId.value = ''
+  adminSelectedStatusFilter.value = ''
+  adminSelectedPriorityFilter.value = ''
+}
+
+function clearMemberFilters() {
+  selectedProjectFilter.value = ''
+  selectedStatusFilter.value = ''
+  taskSearchQuery.value = ''
 }
 
 async function loadAllData() {
@@ -1029,27 +963,17 @@ async function updateTaskStatus(taskId, newStatus) {
   isLoadingTasks.value = false
 }
 
-async function deleteTask(taskId) {
-  if (!confirm('Delete this task?')) return
+async function archiveTask(taskId) {
   isLoadingTasks.value = true
   try {
-    var event = calendarEvents.value.find(function (e) {
-      var eventTaskId = e.taskId?._id || e.taskId || e.task?._id || e.task
-      return eventTaskId && String(eventTaskId) === String(taskId)
-    })
-    if (event) {
-      await backend.delete('/api/calendar/events/' + event._id)
-      await loadCalendarEvents()
-    }
-
-    await backend.delete('/api/tasks/' + taskId)
+    await backend.put('/api/tasks/' + taskId + '/archive')
     if (selectedTask.value && selectedTask.value._id === taskId) {
       showTaskPopup.value = false
       selectedTask.value = null
     }
     await loadTasks()
   } catch (e) {
-    errorMessage.value = 'Error deleting task'
+    errorMessage.value = 'Error archiving task'
   }
   isLoadingTasks.value = false
 }

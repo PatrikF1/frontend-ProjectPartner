@@ -14,6 +14,8 @@ import Projects from '@/views/Projects.vue'
 import Calendar from '@/views/Calendar.vue'
 // @ts-ignore
 import Tasks from '@/views/Tasks.vue'
+// @ts-ignore
+import Archive from '@/views/Archive.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +58,11 @@ const router = createRouter({
       path: '/tasks',
       name: 'tasks',
       component: Tasks,
+    },
+    {
+      path: '/archive',
+      name: 'archive',
+      component: Archive,
     },
   ],
 })
