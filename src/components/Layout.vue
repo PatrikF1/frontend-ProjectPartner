@@ -149,6 +149,8 @@
         </div>
       </main>
     </div>
+
+    <AIChatbot />
   </div>
 </template>
 
@@ -164,6 +166,7 @@ import {
   ChartBarIcon,
   ArchiveBoxIcon,
 } from '@heroicons/vue/24/outline'
+import AIChatbot from './AIChatbot.vue'
 
 const mobileMenuOpen = ref(false)
 
