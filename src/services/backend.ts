@@ -1,16 +1,20 @@
 import axios from 'axios'
 
-var productionBackend = axios.create({
-  baseURL: 'https://backend-projectpartner.onrender.com',
+const getBackendURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+
+  if (import.meta.env.PROD) {
+    return 'https://backend-projectpartner.onrender.com'
+  }
+
+  return 'http://localhost:3000'
+}
+
+const backend = axios.create({
+  baseURL: getBackendURL(),
 })
-
-var localBackend = axios.create({
-  baseURL: 'http://localhost:3000',
-})
-
-var isProduction = import.meta.env.PROD
-
-var backend = isProduction ? productionBackend : localBackend
 
 export { backend }
 
