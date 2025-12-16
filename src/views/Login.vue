@@ -2,13 +2,14 @@
   <div
     class="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-gray-900 text-white"
   >
-    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm mt-4">
       <img
-        class="mx-auto h-10 w-auto"
-        src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-        alt="Your Company"
+        class="mx-auto w-full max-w-xs h-auto object-contain"
+        :src="logo"
+        alt="ProjectPartner"
+        style="background: transparent; max-height: 100px"
       />
-      <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
+      <h2 class="mt-4 text-center text-2xl/9 font-bold tracking-tight text-white">
         Sign in to your account
       </h2>
     </div>
@@ -78,6 +79,7 @@ import { useRouter, RouterLink } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import Alert from '@/components/Alert.vue'
+import logo from '@/assets/pp_logo.png'
 
 const router = useRouter()
 const authStore = useAuthStore()

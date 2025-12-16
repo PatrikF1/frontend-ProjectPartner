@@ -29,7 +29,10 @@
         </nav>
 
         <div class="flex-shrink-0 flex flex-col border-t border-gray-700 p-4">
-          <div class="flex items-center w-full mb-3">
+          <div
+            @click="navigateToProfile"
+            class="flex items-center w-full mb-3 cursor-pointer hover:bg-gray-700 rounded-md p-2 -m-2 transition-colors"
+          >
             <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
             <div class="ml-3 flex-1">
               <p class="text-sm font-medium text-white">{{ user.name }}</p>
@@ -87,7 +90,10 @@
           </nav>
 
           <div class="flex-shrink-0 flex flex-col border-t border-gray-700 p-4">
-            <div class="flex items-center w-full mb-3">
+            <div
+              @click="handleMobileProfile"
+              class="flex items-center w-full mb-3 cursor-pointer hover:bg-gray-700 rounded-md p-2 -m-2 transition-colors"
+            >
               <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
               <div class="ml-3 flex-1">
                 <p class="text-sm font-medium text-white">{{ user.name }}</p>
@@ -129,6 +135,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import AIChatbot from './AIChatbot.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
+import defaultAvatar from '@/assets/icon-prof.png'
 
 const mobileMenuOpen = ref(false)
 const confirmDialogRef = ref(null)
@@ -137,12 +144,11 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const user = {
+const user = computed(() => ({
   name: authStore.user?.name ? `${authStore.user.name} ${authStore.user.lastname}` : 'User',
   email: authStore.user?.email || 'user@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-}
+  imageUrl: authStore.user?.imageUrl || defaultAvatar,
+}))
 
 const navigation = computed(() => [
   {
@@ -183,6 +189,15 @@ function navigateTo(href) {
 
 function handleMobileNav(href) {
   navigateTo(href)
+  mobileMenuOpen.value = false
+}
+
+function navigateToProfile() {
+  router.push('/profile')
+}
+
+function handleMobileProfile() {
+  navigateToProfile()
   mobileMenuOpen.value = false
 }
 
