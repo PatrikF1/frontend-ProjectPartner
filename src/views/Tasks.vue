@@ -653,6 +653,7 @@
         </div>
       </div>
     </div>
+    <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
 
@@ -662,6 +663,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useApplicationsStore } from '@/stores/applications'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 var authStore = useAuthStore()
 var applicationsStore = useApplicationsStore()
@@ -685,6 +687,7 @@ var allUsers = ref([])
 var selectedProjectFilter = ref('')
 var selectedStatusFilter = ref('')
 var taskSearchQuery = ref('')
+var confirmDialogRef = ref(null)
 
 var applicationForm = reactive({
   name: '',
@@ -964,18 +967,27 @@ async function updateTaskStatus(taskId, newStatus) {
 }
 
 async function archiveTask(taskId) {
-  isLoadingTasks.value = true
-  try {
-    await backend.put('/api/tasks/' + taskId + '/archive')
-    if (selectedTask.value && selectedTask.value._id === taskId) {
-      showTaskPopup.value = false
-      selectedTask.value = null
-    }
-    await loadTasks()
-  } catch (e) {
-    errorMessage.value = 'Error archiving task'
-  }
-  isLoadingTasks.value = false
+  confirmDialogRef.value.show({
+    type: 'danger',
+    title: 'Archive Task',
+    message: 'Are you sure you want to archive this task?',
+    confirmText: 'Archive',
+    cancelText: 'Cancel',
+    onConfirm: async function () {
+      isLoadingTasks.value = true
+      try {
+        await backend.put('/api/tasks/' + taskId + '/archive')
+        if (selectedTask.value && selectedTask.value._id === taskId) {
+          showTaskPopup.value = false
+          selectedTask.value = null
+        }
+        await loadTasks()
+      } catch (e) {
+        errorMessage.value = 'Error archiving task'
+      }
+      isLoadingTasks.value = false
+    },
+  })
 }
 
 onMounted(async () => {

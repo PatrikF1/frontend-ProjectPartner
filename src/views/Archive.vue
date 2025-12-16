@@ -71,6 +71,7 @@
         </div>
       </div>
     </div>
+    <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
 
@@ -79,11 +80,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const archivedTasks = ref([])
 const errorMessage = ref('')
+const confirmDialogRef = ref(null)
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
@@ -108,13 +111,21 @@ async function loadArchivedTasks() {
 }
 
 async function deleteTask(taskId) {
-  if (!confirm('Permanently delete this task? This cannot be undone.')) return
-  try {
-    await backend.delete('/api/tasks/' + taskId)
-    await loadArchivedTasks()
-  } catch (e) {
-    errorMessage.value = 'Error deleting task'
-  }
+  confirmDialogRef.value.show({
+    type: 'danger',
+    title: 'Delete Task',
+    message: 'Permanently delete this task? This cannot be undone.',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    onConfirm: async function () {
+      try {
+        await backend.delete('/api/tasks/' + taskId)
+        await loadArchivedTasks()
+      } catch (e) {
+        errorMessage.value = 'Error deleting task'
+      }
+    },
+  })
 }
 
 onMounted(() => {

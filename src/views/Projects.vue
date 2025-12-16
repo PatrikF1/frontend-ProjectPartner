@@ -457,6 +457,7 @@
         </div>
       </div>
     </div>
+    <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
 
@@ -466,6 +467,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 var router = useRouter()
 var authStore = useAuthStore()
@@ -482,6 +484,7 @@ var activeTab = ref('pending')
 var filterType = ref('all')
 var selectedAdminId = ref('')
 var selectedType = ref('')
+var confirmDialogRef = ref(null)
 
 var form = reactive({
   name: '',
@@ -626,16 +629,24 @@ async function adminUpdateProject() {
 }
 
 async function adminDeleteProject(projectId) {
-  if (!confirm('Delete this project?')) return
-  loading.value = true
-  try {
-    await backend.delete('/api/projects/' + projectId)
-    projects.value = projects.value.filter((project) => project._id !== projectId)
-    selectedProjectId.value = ''
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
-  }
-  loading.value = false
+  confirmDialogRef.value.show({
+    type: 'danger',
+    title: 'Delete Project',
+    message: 'Are you sure you want to delete this project? This action cannot be undone.',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    onConfirm: async function () {
+      loading.value = true
+      try {
+        await backend.delete('/api/projects/' + projectId)
+        projects.value = projects.value.filter((project) => project._id !== projectId)
+        selectedProjectId.value = ''
+      } catch (e) {
+        error.value = e?.response?.data?.msg || 'Error'
+      }
+      loading.value = false
+    },
+  })
 }
 
 onMounted(async () => {

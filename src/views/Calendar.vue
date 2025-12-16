@@ -207,6 +207,7 @@
         </div>
       </div>
     </div>
+    <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
 
@@ -215,6 +216,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 var authStore = useAuthStore()
 var isLoading = ref(false)
@@ -223,6 +225,7 @@ var showAddEventForm = ref(false)
 var selectedEvent = ref(null)
 var events = ref([])
 var myProjects = ref([])
+var confirmDialogRef = ref(null)
 
 var eventForm = reactive({
   title: '',
@@ -374,16 +377,24 @@ async function addEvent() {
 }
 
 async function deleteEvent(eventId) {
-  if (!confirm('Remove from calendar?')) return
-  isLoading.value = true
-  try {
-    await backend.delete('/api/calendar/events/' + eventId)
-    selectedEvent.value = null
-    await loadEvents()
-  } catch (e) {
-    errorMessage.value = 'Error removing event from calendar'
-  }
-  isLoading.value = false
+  confirmDialogRef.value.show({
+    type: 'danger',
+    title: 'Remove Event',
+    message: 'Are you sure you want to remove this event from the calendar?',
+    confirmText: 'Remove',
+    cancelText: 'Cancel',
+    onConfirm: async function () {
+      isLoading.value = true
+      try {
+        await backend.delete('/api/calendar/events/' + eventId)
+        selectedEvent.value = null
+        await loadEvents()
+      } catch (e) {
+        errorMessage.value = 'Error removing event from calendar'
+      }
+      isLoading.value = false
+    },
+  })
 }
 
 onMounted(async () => {
