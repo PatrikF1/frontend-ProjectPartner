@@ -10,11 +10,9 @@
     <div
       v-if="visible"
       :class="[
-        'rounded-lg p-4 mb-4 flex items-start border-l-4',
+        'fixed top-4 right-4 z-50 rounded-lg p-4 mb-4 flex items-start border-l-4 shadow-lg max-w-md',
         type === 'success' && 'bg-gray-800 border-green-500 text-white',
         type === 'error' && 'bg-gray-800 border-red-500 text-white',
-        type === 'warning' && 'bg-gray-800 border-yellow-500 text-white',
-        type === 'info' && 'bg-gray-800 border-blue-500 text-white',
       ]"
     >
       <div class="flex-shrink-0">
@@ -42,31 +40,11 @@
             clip-rule="evenodd"
           />
         </svg>
-        <svg
-          v-else-if="type === 'warning'"
-          class="h-5 w-5 text-yellow-400"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <svg v-else class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd"
-          />
-        </svg>
       </div>
       <div class="ml-3 flex-1">
         <p class="text-sm font-medium text-white">{{ message }}</p>
       </div>
       <button
-        v-if="dismissible"
         @click="dismiss"
         class="ml-4 flex-shrink-0 text-gray-400 hover:text-white transition-colors"
       >
@@ -86,9 +64,8 @@
 import { ref, onBeforeUnmount } from 'vue'
 
 const visible = ref(false)
-const type = ref('info')
+const type = ref('success')
 const message = ref('')
-const dismissible = ref(true)
 const autoClose = ref(false)
 const duration = ref(5000)
 const autoCloseTimer = ref(null)
@@ -115,7 +92,6 @@ function dismiss() {
 function show(alertType, alertMessage, options = {}) {
   type.value = alertType
   message.value = alertMessage
-  dismissible.value = options.dismissible !== false
   autoClose.value = options.autoClose || false
   duration.value = options.duration || 5000
   visible.value = true
