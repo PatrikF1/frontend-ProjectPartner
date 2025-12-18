@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createRouter, createWebHistory } from 'vue-router'
 // @ts-ignore
-import Landing from '@/views/Landing.vue'
+import Home from '@/views/Home.vue'
 // @ts-ignore
 import Login from '@/views/Login.vue'
 // @ts-ignore
@@ -24,12 +24,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/landing',
+      redirect: '/home',
     },
     {
-      path: '/landing',
-      name: 'landing',
-      component: Landing,
+      path: '/home',
+      name: 'home',
+      component: Home,
     },
     {
       path: '/login',
