@@ -52,7 +52,7 @@
             placeholder="Capacity (optional)"
           />
 
-          <div v-if="error" class="text-red-400 text-sm">{{ error }}</div>
+          <Alert ref="alertRef" />
 
           <button
             type="submit"
@@ -457,6 +457,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
@@ -468,6 +469,7 @@ import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import Alert from '@/components/Alert.vue'
 
 var router = useRouter()
 var authStore = useAuthStore()
@@ -485,6 +487,7 @@ var filterType = ref('all')
 var selectedAdminId = ref('')
 var selectedType = ref('')
 var confirmDialogRef = ref(null)
+var alertRef = ref(null)
 
 var form = reactive({
   name: '',
@@ -549,8 +552,18 @@ async function adminHandleApplication(applicationId, action) {
     await backend.put('/api/applications/' + applicationId + '/' + action, {})
     await adminLoadApplications()
     await loadProjects()
+    if (alertRef.value) {
+      const message = action === 'approve' ? 'Application approved successfully!' : 'Application rejected successfully!'
+      alertRef.value.show('success', message, {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error handling application'
+    const errorMessage = e?.response?.data?.msg || 'Error handling application'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
   }
   loadingApplications.value = false
 }
@@ -594,8 +607,17 @@ async function adminCreateProject() {
     form.type = ''
     form.capacity = ''
     showCreateForm.value = false
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Project created successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    const errorMessage = e?.response?.data?.msg || 'Error creating project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
   }
   loading.value = false
 }
@@ -622,8 +644,17 @@ async function adminUpdateProject() {
       projects.value[index] = response.data
       editingProject.value = null
     }
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Project updated successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    const errorMessage = e?.response?.data?.msg || 'Error updating project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
   }
   loading.value = false
 }
@@ -641,8 +672,17 @@ async function adminDeleteProject(projectId) {
         await backend.delete('/api/projects/' + projectId)
         projects.value = projects.value.filter((project) => project._id !== projectId)
         selectedProjectId.value = ''
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Project deleted successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (e) {
-        error.value = e?.response?.data?.msg || 'Error'
+        const errorMessage = e?.response?.data?.msg || 'Error deleting project'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMessage)
+        }
       }
       loading.value = false
     },

@@ -71,6 +71,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
@@ -81,12 +82,14 @@ import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import Alert from '@/components/Alert.vue'
 
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const archivedTasks = ref([])
 const errorMessage = ref('')
 const confirmDialogRef = ref(null)
+const alertRef = ref(null)
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
@@ -121,8 +124,17 @@ async function deleteTask(taskId) {
       try {
         await backend.delete('/api/tasks/' + taskId)
         await loadArchivedTasks()
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Task deleted successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (e) {
-        errorMessage.value = 'Error deleting task'
+        const errorMessage = e?.response?.data?.msg || 'Error deleting task'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMessage)
+        }
       }
     },
   })

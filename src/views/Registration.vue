@@ -94,8 +94,7 @@
           <label for="isAdmin" class="ml-2 block text-sm text-gray-100"> Register as admin </label>
         </div>
 
-        <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
-        <p v-if="success" class="text-sm text-green-400">Account created! Redirecting…</p>
+        <Alert ref="alertRef" />
 
         <div>
           <button
@@ -122,10 +121,12 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import Alert from '@/components/Alert.vue'
 import logo from '@/assets/pp_logo.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const alertRef = ref(null)
 
 const form = reactive({
   name: '',
@@ -137,12 +138,7 @@ const form = reactive({
   isAdmin: false,
 })
 
-const error = ref(null)
-const success = ref(false)
-
 async function onSubmit() {
-  error.value = null
-
   authStore.setLoading(true)
   try {
     const payload = {
@@ -160,13 +156,19 @@ async function onSubmit() {
     authStore.setUser(response)
     authStore.setToken(response.token)
 
-    success.value = true
-    console.log('Uspješna registracija!')
-    console.log(`Registrirani ste kao ${response.name} ${response.lastname}`)
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Account created successfully! Redirecting...', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
 
     setTimeout(() => router.push('/dashboard'), 200)
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error registering'
+    const errorMessage = e?.response?.data?.msg || 'Error registering'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
     console.error(e)
   } finally {
     authStore.setLoading(false)

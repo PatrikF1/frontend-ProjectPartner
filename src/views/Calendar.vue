@@ -194,8 +194,6 @@
               </label>
             </div>
 
-            <div v-if="errorMessage" class="text-red-400 text-sm">{{ errorMessage }}</div>
-
             <button
               type="submit"
               :disabled="isLoading"
@@ -207,6 +205,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
   </Layout>
 </template>
@@ -215,6 +214,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
+import Alert from '@/components/Alert.vue'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
@@ -226,6 +226,7 @@ var selectedEvent = ref(null)
 var events = ref([])
 var myProjects = ref([])
 var confirmDialogRef = ref(null)
+var alertRef = ref(null)
 
 var eventForm = reactive({
   title: '',
@@ -370,8 +371,17 @@ async function addEvent() {
     eventForm.taskId = ''
     showAddEventForm.value = false
     await loadEvents()
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Event created successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    errorMessage.value = 'Error adding event'
+    const errorMessage = e?.response?.data?.msg || 'Error adding event'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
   }
   isLoading.value = false
 }
@@ -389,8 +399,17 @@ async function deleteEvent(eventId) {
         await backend.delete('/api/calendar/events/' + eventId)
         selectedEvent.value = null
         await loadEvents()
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Event deleted successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (e) {
-        errorMessage.value = 'Error removing event from calendar'
+        const errorMessage = e?.response?.data?.msg || 'Error removing event from calendar'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMessage)
+        }
       }
       isLoading.value = false
     },
