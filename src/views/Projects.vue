@@ -458,6 +458,7 @@
       </div>
     </div>
     <ConfirmDialog ref="confirmDialogRef" />
+    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -468,6 +469,7 @@ import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import Alert from '@/components/Alert.vue'
 
 var router = useRouter()
 var authStore = useAuthStore()
@@ -485,6 +487,7 @@ var filterType = ref('all')
 var selectedAdminId = ref('')
 var selectedType = ref('')
 var confirmDialogRef = ref(null)
+var alertRef = ref(null)
 
 var form = reactive({
   name: '',
@@ -549,8 +552,23 @@ async function adminHandleApplication(applicationId, action) {
     await backend.put('/api/applications/' + applicationId + '/' + action, {})
     await adminLoadApplications()
     await loadProjects()
+    if (alertRef.value) {
+      alertRef.value.show(
+        'success',
+        'Application successfully ' + (action === 'approve' ? 'approved' : 'rejected'),
+        {
+          autoClose: true,
+          duration: 3000,
+        },
+      )
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error handling application'
+    var errorMsg = e?.response?.data?.msg || 'Error handling application'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      error.value = errorMsg
+    }
   }
   loadingApplications.value = false
 }
@@ -563,9 +581,23 @@ async function joinProject(projectId) {
     if (index >= 0) {
       projects.value[index] = response.data
     }
-    router.push('/tasks')
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Successfully joined project!', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
+
+    setTimeout(() => {
+      router.push('/tasks')
+    }, 500)
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    var errorMsg = e?.response?.data?.msg || 'Error joining project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      error.value = errorMsg
+    }
   }
   loading.value = false
 }
@@ -578,8 +610,19 @@ async function leaveProject(projectId) {
     if (index >= 0) {
       projects.value[index] = response.data
     }
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Successfully left project!', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    var errorMsg = e?.response?.data?.msg || 'Error leaving project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      error.value = errorMsg
+    }
   }
   loading.value = false
 }
@@ -594,8 +637,19 @@ async function adminCreateProject() {
     form.type = ''
     form.capacity = ''
     showCreateForm.value = false
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Project created successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    var errorMsg = e?.response?.data?.msg || 'Error creating project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      error.value = errorMsg
+    }
   }
   loading.value = false
 }
@@ -622,8 +676,19 @@ async function adminUpdateProject() {
       projects.value[index] = response.data
       editingProject.value = null
     }
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Project updated successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+    var errorMsg = e?.response?.data?.msg || 'Error updating project'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      error.value = errorMsg
+    }
   }
   loading.value = false
 }

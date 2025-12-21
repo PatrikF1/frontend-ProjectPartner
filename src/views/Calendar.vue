@@ -56,11 +56,9 @@
                   'text-xs p-1 rounded cursor-pointer hover:opacity-80',
                   event.isAdminEvent
                     ? 'bg-yellow-600 text-white'
-                    : event.sendAlert
-                      ? 'bg-red-600 text-white'
-                      : event.taskId || event.task
-                        ? 'bg-green-600 text-white'
-                        : 'bg-indigo-600 text-white',
+                    : event.taskId || event.task
+                      ? 'bg-green-600 text-white'
+                      : 'bg-indigo-600 text-white',
                 ]"
               >
                 {{ event.title || 'No title' }}
@@ -151,16 +149,6 @@
             </div>
 
             <div>
-              <label class="block text-sm text-gray-300 mb-1">Date *</label>
-              <input
-                v-model="eventForm.date"
-                type="date"
-                required
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
               <label class="block text-sm text-gray-300 mb-1">Description</label>
               <textarea
                 v-model="eventForm.description"
@@ -183,17 +171,6 @@
               </select>
             </div>
 
-            <div v-if="isAdmin">
-              <label class="flex items-center gap-2">
-                <input
-                  v-model="eventForm.sendAlert"
-                  type="checkbox"
-                  class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
-                />
-                <span class="text-sm text-gray-300">Send alert to all project members</span>
-              </label>
-            </div>
-
             <div v-if="errorMessage" class="text-red-400 text-sm">{{ errorMessage }}</div>
 
             <button
@@ -208,6 +185,7 @@
       </div>
     </div>
     <ConfirmDialog ref="confirmDialogRef" />
+    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -217,6 +195,7 @@ import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import Alert from '@/components/Alert.vue'
 
 var authStore = useAuthStore()
 var isLoading = ref(false)
@@ -226,12 +205,12 @@ var selectedEvent = ref(null)
 var events = ref([])
 var myProjects = ref([])
 var confirmDialogRef = ref(null)
+var alertRef = ref(null)
 
 var eventForm = reactive({
   title: '',
   date: '',
   description: '',
-  sendAlert: false,
   projectId: '',
   taskId: '',
 })
@@ -354,24 +333,36 @@ async function loadProjects() {
 async function addEvent() {
   isLoading.value = true
   try {
+    var eventDate = eventForm.date || formatDateForInput(new Date())
+
     await backend.post('/api/calendar/events', {
       title: eventForm.title,
-      date: eventForm.date,
+      date: eventDate,
       description: eventForm.description,
-      sendAlert: eventForm.sendAlert,
       projectId: eventForm.projectId || null,
       taskId: eventForm.taskId || null,
     })
     eventForm.title = ''
     eventForm.date = ''
     eventForm.description = ''
-    eventForm.sendAlert = false
     eventForm.projectId = ''
     eventForm.taskId = ''
     showAddEventForm.value = false
     await loadEvents()
+
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Event added successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    errorMessage.value = 'Error adding event'
+    var errorMsg = e?.response?.data?.msg || 'Error adding event'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      errorMessage.value = errorMsg
+    }
   }
   isLoading.value = false
 }
@@ -389,8 +380,20 @@ async function deleteEvent(eventId) {
         await backend.delete('/api/calendar/events/' + eventId)
         selectedEvent.value = null
         await loadEvents()
+
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Event removed successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (e) {
-        errorMessage.value = 'Error removing event from calendar'
+        var errorMsg = e?.response?.data?.msg || 'Error removing event'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMsg)
+        } else {
+          errorMessage.value = errorMsg
+        }
       }
       isLoading.value = false
     },

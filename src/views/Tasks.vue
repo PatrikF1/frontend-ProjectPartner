@@ -654,6 +654,7 @@
       </div>
     </div>
     <ConfirmDialog ref="confirmDialogRef" />
+    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -664,6 +665,7 @@ import { useApplicationsStore } from '@/stores/applications'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import Alert from '@/components/Alert.vue'
 
 var authStore = useAuthStore()
 var applicationsStore = useApplicationsStore()
@@ -688,6 +690,7 @@ var selectedProjectFilter = ref('')
 var selectedStatusFilter = ref('')
 var taskSearchQuery = ref('')
 var confirmDialogRef = ref(null)
+var alertRef = ref(null)
 
 var applicationForm = reactive({
   name: '',
@@ -909,8 +912,19 @@ async function submitApplication() {
     applicationForm.description = ''
     selectedProjectId.value = ''
     await loadAllData()
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Application submitted successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    errorMessage.value = 'Error submitting application'
+    var errorMsg = e?.response?.data?.msg || 'Error submitting application'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      errorMessage.value = errorMsg
+    }
   }
   isLoading.value = false
 }
@@ -946,8 +960,19 @@ async function createTask(app) {
     newTaskForm.priority = 'medium'
     openTaskFormForApplicationId.value = ''
     await loadTasks()
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Task created successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    errorMessage.value = 'Error creating task'
+    var errorMsg = e?.response?.data?.msg || 'Error creating task'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      errorMessage.value = errorMsg
+    }
   }
   isLoadingTasks.value = false
 }
@@ -960,8 +985,19 @@ async function updateTaskStatus(taskId, newStatus) {
       selectedTask.value.status = newStatus
     }
     await loadTasks()
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Task status updated successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
   } catch (e) {
-    errorMessage.value = 'Error updating task'
+    var errorMsg = e?.response?.data?.msg || 'Error updating task'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    } else {
+      errorMessage.value = errorMsg
+    }
   }
   isLoadingTasks.value = false
 }
@@ -982,8 +1018,19 @@ async function archiveTask(taskId) {
           selectedTask.value = null
         }
         await loadTasks()
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Task archived successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (e) {
-        errorMessage.value = 'Error archiving task'
+        var errorMsg = e?.response?.data?.msg || 'Error archiving task'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMsg)
+        } else {
+          errorMessage.value = errorMsg
+        }
       }
       isLoadingTasks.value = false
     },
