@@ -79,7 +79,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Pending ({{ pendingApplications.length }})
+              Pending ({{ getPendingApplications().length }})
             </button>
             <button
               @click="activeApplicationTab = 'approved'"
@@ -90,7 +90,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Approved ({{ approvedApplications.length }})
+              Approved ({{ getApprovedApplications().length }})
             </button>
             <button
               @click="activeApplicationTab = 'rejected'"
@@ -101,20 +101,20 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Rejected ({{ rejectedApplications.length }})
+              Rejected ({{ getRejectedApplications().length }})
             </button>
           </div>
 
           <div v-if="activeApplicationTab === 'pending'">
             <div
-              v-if="pendingApplications.length === 0"
+              v-if="getPendingApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No pending applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in pendingApplications"
+                v-for="app in getPendingApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
               >
@@ -130,14 +130,14 @@
 
           <div v-if="activeApplicationTab === 'approved'">
             <div
-              v-if="approvedApplications.length === 0"
+              v-if="getApprovedApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No approved applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in approvedApplications"
+                v-for="app in getApprovedApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
               >
@@ -153,14 +153,14 @@
 
           <div v-if="activeApplicationTab === 'rejected'">
             <div
-              v-if="rejectedApplications.length === 0"
+              v-if="getRejectedApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No rejected applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in rejectedApplications"
+                v-for="app in getRejectedApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
               >
@@ -175,7 +175,10 @@
           </div>
         </div>
 
-        <div v-if="approvedApplications.length > 0" class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <div
+          v-if="getApprovedApplications().length > 0"
+          class="bg-gray-800 rounded-lg shadow-lg p-6"
+        >
           <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
           <p class="text-gray-300 mb-6">Manage tasks for your approved projects.</p>
 
@@ -401,8 +404,66 @@
       </div>
 
       <div v-if="isAdmin" class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">All Tasks (Admin)</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-white">All Tasks (Admin)</h2>
+          <button
+            @click="showAdminTaskForm = !showAdminTaskForm"
+            class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          >
+            {{ showAdminTaskForm ? 'Cancel' : 'Create Task' }}
+          </button>
+        </div>
         <p class="text-gray-300 mb-6">View all tasks and user progress.</p>
+
+        <form
+          v-if="showAdminTaskForm"
+          @submit.prevent="createAdminTask"
+          class="mb-6 bg-gray-700 rounded-lg p-4 space-y-3"
+        >
+          <select
+            v-model="adminTaskForm.projectId"
+            required
+            class="w-full px-3 py-2 bg-gray-600 text-white rounded"
+          >
+            <option value="">Select Project</option>
+            <option v-for="p in allProjects" :key="p._id" :value="p._id">
+              {{ p.name }}
+            </option>
+          </select>
+          <input
+            v-model="adminTaskForm.name"
+            required
+            placeholder="Task name"
+            class="w-full px-3 py-2 bg-gray-600 text-white rounded"
+          />
+          <textarea
+            v-model="adminTaskForm.description"
+            placeholder="Description"
+            class="w-full px-3 py-2 bg-gray-600 text-white rounded"
+          ></textarea>
+          <div class="flex gap-2">
+            <select
+              v-model="adminTaskForm.priority"
+              class="px-3 py-2 bg-gray-600 text-white rounded"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <input
+              v-model="adminTaskForm.deadline"
+              type="date"
+              class="px-3 py-2 bg-gray-600 text-white rounded"
+            />
+          </div>
+          <button
+            type="submit"
+            :disabled="isLoadingTasks"
+            class="w-full px-4 py-2 bg-indigo-600 text-white rounded"
+          >
+            Create
+          </button>
+        </form>
 
         <div class="mb-6 bg-gray-700 rounded-lg p-4">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -680,6 +741,7 @@ var selectedTask = ref(null)
 var allProjects = ref([])
 var allApplications = ref([])
 var showApplicationForm = ref(false)
+var showAdminTaskForm = ref(false)
 var activeApplicationTab = ref('pending')
 var adminSelectedUserId = ref('')
 var adminSelectedProjectId = ref('')
@@ -704,6 +766,14 @@ var newTaskForm = reactive({
   priority: 'medium',
 })
 
+var adminTaskForm = reactive({
+  projectId: '',
+  name: '',
+  description: '',
+  priority: 'medium',
+  deadline: '',
+})
+
 var isAdmin = computed(() => {
   return authStore.user?.isAdmin === true
 })
@@ -711,17 +781,35 @@ var isAdmin = computed(() => {
 var myProjects = ref([])
 var myApplications = ref([])
 
-var pendingApplications = computed(() => {
-  return myApplications.value.filter((app) => app.status === 'pending')
-})
+function getPendingApplications() {
+  var result = []
+  for (var i = 0; i < myApplications.value.length; i++) {
+    if (myApplications.value[i].status === 'pending') {
+      result.push(myApplications.value[i])
+    }
+  }
+  return result
+}
 
-var approvedApplications = computed(() => {
-  return myApplications.value.filter((app) => app.status === 'approved')
-})
+function getApprovedApplications() {
+  var result = []
+  for (var i = 0; i < myApplications.value.length; i++) {
+    if (myApplications.value[i].status === 'approved') {
+      result.push(myApplications.value[i])
+    }
+  }
+  return result
+}
 
-var rejectedApplications = computed(() => {
-  return myApplications.value.filter((app) => app.status === 'rejected')
-})
+function getRejectedApplications() {
+  var result = []
+  for (var i = 0; i < myApplications.value.length; i++) {
+    if (myApplications.value[i].status === 'rejected') {
+      result.push(myApplications.value[i])
+    }
+  }
+  return result
+}
 
 function toggleTaskForm(applicationId) {
   openTaskFormForApplicationId.value =
@@ -738,40 +826,67 @@ function toggleTaskPopup(task) {
 }
 
 function getFilteredApplications() {
+  var approved = getApprovedApplications()
+
   if (!selectedProjectFilter.value) {
-    return approvedApplications.value
+    return approved
   }
-  return approvedApplications.value.filter(function (app) {
-    var appProjectId = app.projectId?._id || app.projectId
-    return String(appProjectId) === String(selectedProjectFilter.value)
-  })
+
+  var result = []
+  for (var i = 0; i < approved.length; i++) {
+    var app = approved[i]
+    var projectId = app.projectId?._id || app.projectId
+    if (String(projectId) === String(selectedProjectFilter.value)) {
+      result.push(app)
+    }
+  }
+  return result
 }
 
 function getFilteredTasksForApp(app) {
   var appProjectId = app.projectId?._id || app.projectId
   var appId = app._id
-  var tasks = allTasks.value.filter(function (task) {
-    if (task.isArchived) return false
+  var result = []
+
+  for (var i = 0; i < allTasks.value.length; i++) {
+    var task = allTasks.value[i]
+    if (task.isArchived) continue
+
     var taskProjectId = task.projectId?._id || task.projectId
     var taskApplicationId = task.applicationId?._id || task.applicationId
-    return (
-      String(taskProjectId) === String(appProjectId) && String(taskApplicationId) === String(appId)
-    )
-  })
-  if (selectedStatusFilter.value) {
-    tasks = tasks.filter(function (task) {
-      return task.status === selectedStatusFilter.value
-    })
+
+    if (
+      String(taskProjectId) === String(appProjectId) &&
+      String(taskApplicationId) === String(appId)
+    ) {
+      result.push(task)
+    }
   }
+
+  if (selectedStatusFilter.value) {
+    var filteredByStatus = []
+    for (var j = 0; j < result.length; j++) {
+      if (result[j].status === selectedStatusFilter.value) {
+        filteredByStatus.push(result[j])
+      }
+    }
+    result = filteredByStatus
+  }
+
   if (taskSearchQuery.value) {
     var search = taskSearchQuery.value.toLowerCase()
-    tasks = tasks.filter(function (task) {
-      var name = (task.name || '').toLowerCase()
-      var description = (task.description || '').toLowerCase()
-      return name.includes(search) || description.includes(search)
-    })
+    var filteredBySearch = []
+    for (var k = 0; k < result.length; k++) {
+      var taskName = (result[k].name || '').toLowerCase()
+      var taskDesc = (result[k].description || '').toLowerCase()
+      if (taskName.includes(search) || taskDesc.includes(search)) {
+        filteredBySearch.push(result[k])
+      }
+    }
+    result = filteredBySearch
   }
-  return tasks
+
+  return result
 }
 
 var allTasks = ref([])
@@ -781,8 +896,9 @@ async function loadCalendarEvents() {
   try {
     var response = await backend.get('/api/calendar/events')
     calendarEvents.value = response.data || []
-  } catch (e) {
+  } catch (error) {
     errorMessage.value = 'Error loading calendar events'
+    console.error(error)
   }
 }
 
@@ -791,10 +907,9 @@ async function loadTasks() {
   try {
     var response = await backend.get('/api/tasks')
     allTasks.value = response.data || []
-    console.log('Loaded tasks:', allTasks.value.length, allTasks.value)
-  } catch (e) {
+  } catch (error) {
     errorMessage.value = 'Error loading tasks'
-    console.error('Error loading tasks:', e)
+    console.error(error)
   }
   isLoadingTasks.value = false
 }
@@ -814,49 +929,86 @@ async function loadAdminTasks() {
   isLoadingTasks.value = true
   try {
     var response = await backend.get('/api/tasks')
-    displayedAdminTasks.value = (response.data || []).filter(function (task) {
-      return !task.isArchived
-    })
-    console.log('Loaded admin tasks:', displayedAdminTasks.value.length)
-  } catch (e) {
+    var allTasksData = response.data || []
+
+    displayedAdminTasks.value = []
+    for (var i = 0; i < allTasksData.length; i++) {
+      if (!allTasksData[i].isArchived) {
+        displayedAdminTasks.value.push(allTasksData[i])
+      }
+    }
+  } catch (error) {
     errorMessage.value = 'Error loading tasks'
+    console.error(error)
   }
   isLoadingTasks.value = false
 }
 
 function getFilteredAdminTasks() {
-  var tasks = displayedAdminTasks.value
+  var result = []
+
+  for (var i = 0; i < displayedAdminTasks.value.length; i++) {
+    result.push(displayedAdminTasks.value[i])
+  }
+
   if (adminSelectedUserId.value) {
-    tasks = tasks.filter(function (task) {
+    var filteredByUser = []
+    for (var j = 0; j < result.length; j++) {
+      var task = result[j]
       var taskUserId = task.createdBy?._id || task.createdBy
-      return String(taskUserId) === String(adminSelectedUserId.value)
-    })
+      if (String(taskUserId) === String(adminSelectedUserId.value)) {
+        filteredByUser.push(task)
+      }
+    }
+    result = filteredByUser
   }
+
   if (adminSelectedProjectId.value) {
-    tasks = tasks.filter(function (task) {
+    var filteredByProject = []
+    for (var k = 0; k < result.length; k++) {
+      var task = result[k]
       var taskProjectId = task.projectId?._id || task.projectId
-      return String(taskProjectId) === String(adminSelectedProjectId.value)
-    })
+      if (String(taskProjectId) === String(adminSelectedProjectId.value)) {
+        filteredByProject.push(task)
+      }
+    }
+    result = filteredByProject
   }
+
   if (adminSelectedStatusFilter.value) {
-    tasks = tasks.filter(function (task) {
-      return task.status === adminSelectedStatusFilter.value
-    })
+    var filteredByStatus = []
+    for (var l = 0; l < result.length; l++) {
+      if (result[l].status === adminSelectedStatusFilter.value) {
+        filteredByStatus.push(result[l])
+      }
+    }
+    result = filteredByStatus
   }
+
   if (adminSelectedPriorityFilter.value) {
-    tasks = tasks.filter(function (task) {
-      return task.priority === adminSelectedPriorityFilter.value
-    })
+    var filteredByPriority = []
+    for (var m = 0; m < result.length; m++) {
+      if (result[m].priority === adminSelectedPriorityFilter.value) {
+        filteredByPriority.push(result[m])
+      }
+    }
+    result = filteredByPriority
   }
+
   if (taskSearchQuery.value) {
     var search = taskSearchQuery.value.toLowerCase()
-    tasks = tasks.filter(function (task) {
-      var name = (task.name || '').toLowerCase()
-      var description = (task.description || '').toLowerCase()
-      return name.includes(search) || description.includes(search)
-    })
+    var filteredBySearch = []
+    for (var n = 0; n < result.length; n++) {
+      var taskName = (result[n].name || '').toLowerCase()
+      var taskDesc = (result[n].description || '').toLowerCase()
+      if (taskName.includes(search) || taskDesc.includes(search)) {
+        filteredBySearch.push(result[n])
+      }
+    }
+    result = filteredBySearch
   }
-  return tasks
+
+  return result
 }
 
 function clearAdminFilters() {
@@ -893,8 +1045,9 @@ async function loadAllData() {
       allApplications.value = data.applications
       myApplications.value = data.myApplications
     }
-  } catch (e) {
+  } catch (error) {
     errorMessage.value = 'Error loading data'
+    console.error(error)
   }
   isLoading.value = false
 }
@@ -918,8 +1071,8 @@ async function submitApplication() {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error submitting application'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error submitting application'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -966,12 +1119,47 @@ async function createTask(app) {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error creating task'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error creating task'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
       errorMessage.value = errorMsg
+    }
+  }
+  isLoadingTasks.value = false
+}
+
+async function createAdminTask() {
+  isLoadingTasks.value = true
+  try {
+    await backend.post('/api/tasks', {
+      projectId: adminTaskForm.projectId,
+      name: adminTaskForm.name,
+      description: adminTaskForm.description,
+      priority: adminTaskForm.priority,
+      deadline: adminTaskForm.deadline || null,
+      status: 'not-started',
+    })
+    Object.assign(adminTaskForm, {
+      projectId: '',
+      name: '',
+      description: '',
+      priority: 'medium',
+      deadline: '',
+    })
+    showAdminTaskForm.value = false
+    await loadAdminTasks()
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Task created successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error creating task'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
     }
   }
   isLoadingTasks.value = false
@@ -991,8 +1179,8 @@ async function updateTaskStatus(taskId, newStatus) {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error updating task'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error updating task'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -1024,8 +1212,8 @@ async function archiveTask(taskId) {
             duration: 3000,
           })
         }
-      } catch (e) {
-        var errorMsg = e?.response?.data?.msg || 'Error archiving task'
+      } catch (error) {
+        var errorMsg = error.response?.data?.msg || 'Error archiving task'
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

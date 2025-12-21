@@ -323,7 +323,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Pending ({{ adminPendingApplications.length }})
+              Pending ({{ getPendingApplications().length }})
             </button>
             <button
               @click="activeTab = 'approved'"
@@ -334,7 +334,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Approved ({{ adminApprovedApplications.length }})
+              Approved ({{ getApprovedApplications().length }})
             </button>
             <button
               @click="activeTab = 'rejected'"
@@ -345,20 +345,20 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Rejected ({{ adminRejectedApplications.length }})
+              Rejected ({{ getRejectedApplications().length }})
             </button>
           </div>
 
           <div v-if="activeTab === 'pending'">
             <div
-              v-if="adminPendingApplications.length === 0"
+              v-if="getPendingApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No pending applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in adminPendingApplications"
+                v-for="app in getPendingApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
               >
@@ -397,14 +397,14 @@
 
           <div v-if="activeTab === 'approved'">
             <div
-              v-if="adminApprovedApplications.length === 0"
+              v-if="getApprovedApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No approved applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in adminApprovedApplications"
+                v-for="app in getApprovedApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
               >
@@ -427,14 +427,14 @@
 
           <div v-if="activeTab === 'rejected'">
             <div
-              v-if="adminRejectedApplications.length === 0"
+              v-if="getRejectedApplications().length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No rejected applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in adminRejectedApplications"
+                v-for="app in getRejectedApplications()"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
               >
@@ -511,25 +511,43 @@ function isJoined(project) {
   return project.members?.some((member) => member._id === userId) || false
 }
 
-var adminPendingApplications = computed(() => {
-  return applications.value.filter((app) => app.status === 'pending')
-})
+function getPendingApplications() {
+  var result = []
+  for (var i = 0; i < applications.value.length; i++) {
+    if (applications.value[i].status === 'pending') {
+      result.push(applications.value[i])
+    }
+  }
+  return result
+}
 
-var adminApprovedApplications = computed(() => {
-  return applications.value.filter((app) => app.status === 'approved')
-})
+function getApprovedApplications() {
+  var result = []
+  for (var i = 0; i < applications.value.length; i++) {
+    if (applications.value[i].status === 'approved') {
+      result.push(applications.value[i])
+    }
+  }
+  return result
+}
 
-var adminRejectedApplications = computed(() => {
-  return applications.value.filter((app) => app.status === 'rejected')
-})
+function getRejectedApplications() {
+  var result = []
+  for (var i = 0; i < applications.value.length; i++) {
+    if (applications.value[i].status === 'rejected') {
+      result.push(applications.value[i])
+    }
+  }
+  return result
+}
 
 async function loadProjects() {
   loading.value = true
   try {
     var response = await backend.get('/api/projects')
     projects.value = response.data
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error'
+  } catch (error) {
+    error.value = error.response?.data?.msg || 'Error'
   }
   loading.value = false
 }
@@ -540,8 +558,8 @@ async function adminLoadApplications() {
   try {
     var response = await backend.get('/api/applications')
     applications.value = response.data
-  } catch (e) {
-    error.value = e?.response?.data?.msg || 'Error loading applications'
+  } catch (error) {
+    error.value = error.response?.data?.msg || 'Error loading applications'
   }
   loadingApplications.value = false
 }
@@ -562,8 +580,8 @@ async function adminHandleApplication(applicationId, action) {
         },
       )
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error handling application'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error handling application'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -591,8 +609,8 @@ async function joinProject(projectId) {
     setTimeout(() => {
       router.push('/tasks')
     }, 500)
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error joining project'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error joining project'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -616,8 +634,8 @@ async function leaveProject(projectId) {
         duration: 2000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error leaving project'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error leaving project'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -643,8 +661,8 @@ async function adminCreateProject() {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error creating project'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error creating project'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -682,8 +700,8 @@ async function adminUpdateProject() {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error updating project'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error updating project'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -706,8 +724,8 @@ async function adminDeleteProject(projectId) {
         await backend.delete('/api/projects/' + projectId)
         projects.value = projects.value.filter((project) => project._id !== projectId)
         selectedProjectId.value = ''
-      } catch (e) {
-        error.value = e?.response?.data?.msg || 'Error'
+      } catch (error) {
+        error.value = error.response?.data?.msg || 'Error'
       }
       loading.value = false
     },
