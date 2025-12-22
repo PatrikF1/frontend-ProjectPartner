@@ -1159,12 +1159,8 @@ async function createAdminTask() {
     var errorMsg = error.response?.data?.msg || 'Error creating task'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-=======
-  } catch (e) {
-    const errorMessage = e?.response?.data?.msg || 'Error creating task'
-    if (alertRef.value) {
-      alertRef.value.show('error', errorMessage)
->>>>>>> 260f66b2ecfc2b51ffe1f521813def0c25ba73c1
+    } else {
+      errorMessage.value = errorMsg
     }
   }
   isLoadingTasks.value = false
