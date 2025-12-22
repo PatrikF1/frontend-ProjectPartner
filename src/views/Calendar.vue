@@ -186,7 +186,6 @@
     </div>
     <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
-    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -194,7 +193,6 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
-import Alert from '@/components/Alert.vue'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'

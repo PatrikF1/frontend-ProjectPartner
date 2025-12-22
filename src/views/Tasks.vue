@@ -854,11 +854,12 @@ function getFilteredTasksForApp(app) {
     var taskProjectId = task.projectId?._id || task.projectId
     var taskApplicationId = task.applicationId?._id || task.applicationId
 
-    if (
-      String(taskProjectId) === String(appProjectId) &&
-      String(taskApplicationId) === String(appId)
-    ) {
-      result.push(task)
+    if (String(taskProjectId) === String(appProjectId)) {
+      if (String(taskApplicationId) === String(appId)) {
+        result.push(task)
+      } else if (!taskApplicationId) {
+        result.push(task)
+      }
     }
   }
 
@@ -904,8 +905,46 @@ async function loadCalendarEvents() {
 async function loadTasks() {
   isLoadingTasks.value = true
   try {
-    var response = await backend.get('/api/tasks')
-    allTasks.value = response.data || []
+    var allTasksResponse = await backend.get('/api/tasks')
+    var allTasksData = allTasksResponse.data || []
+
+    var myTasksResponse = await backend.get('/api/tasks/my')
+    var myTasksData = myTasksResponse.data || []
+
+    var combinedTasks = []
+    var taskIds = []
+
+    for (var i = 0; i < allTasksData.length; i++) {
+      var taskId = allTasksData[i]._id
+      var found = false
+      for (var k = 0; k < taskIds.length; k++) {
+        if (taskIds[k] === taskId) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        taskIds.push(taskId)
+        combinedTasks.push(allTasksData[i])
+      }
+    }
+
+    for (var j = 0; j < myTasksData.length; j++) {
+      var taskId = myTasksData[j]._id
+      var found = false
+      for (var l = 0; l < taskIds.length; l++) {
+        if (taskIds[l] === taskId) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        taskIds.push(taskId)
+        combinedTasks.push(myTasksData[j])
+      }
+    }
+
+    allTasks.value = combinedTasks
   } catch (error) {
     errorMessage.value = 'Error loading tasks'
     console.error(error)
