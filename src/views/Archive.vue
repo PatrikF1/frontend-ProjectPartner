@@ -71,6 +71,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
     <Alert ref="alertRef" />
   </Layout>
@@ -130,8 +131,8 @@ async function deleteTask(taskId) {
             duration: 3000,
           })
         }
-      } catch (e) {
-        var errorMsg = e?.response?.data?.msg || 'Error deleting task'
+      } catch (error) {
+        var errorMsg = error.response?.data?.msg || 'Error deleting task'
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

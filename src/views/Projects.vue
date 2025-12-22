@@ -52,7 +52,7 @@
             placeholder="Capacity (optional)"
           />
 
-          <div v-if="error" class="text-red-400 text-sm">{{ error }}</div>
+          <Alert ref="alertRef" />
 
           <button
             type="submit"
@@ -457,6 +457,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
     <Alert ref="alertRef" />
   </Layout>
@@ -724,8 +725,19 @@ async function adminDeleteProject(projectId) {
         await backend.delete('/api/projects/' + projectId)
         projects.value = projects.value.filter((project) => project._id !== projectId)
         selectedProjectId.value = ''
+        if (alertRef.value) {
+          alertRef.value.show('success', 'Project deleted successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
+        }
       } catch (error) {
-        error.value = error.response?.data?.msg || 'Error'
+        var errorMsg = error.response?.data?.msg || 'Error deleting project'
+        if (alertRef.value) {
+          alertRef.value.show('error', errorMsg)
+        } else {
+          error.value = errorMsg
+        }
       }
       loading.value = false
     },

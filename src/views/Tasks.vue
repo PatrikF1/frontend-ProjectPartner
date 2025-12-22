@@ -50,8 +50,6 @@
             ></textarea>
           </div>
 
-          <div v-if="errorMessage" class="text-red-400 text-sm">{{ errorMessage }}</div>
-
           <button
             type="submit"
             :disabled="isLoading"
@@ -714,6 +712,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
     <Alert ref="alertRef" />
   </Layout>
@@ -1112,13 +1111,13 @@ async function createTask(app) {
     newTaskForm.deadline = ''
     newTaskForm.priority = 'medium'
     openTaskFormForApplicationId.value = ''
-    await loadTasks()
     if (alertRef.value) {
       alertRef.value.show('success', 'Task created successfully!', {
         autoClose: true,
         duration: 3000,
       })
     }
+    await loadTasks()
   } catch (error) {
     var errorMsg = error.response?.data?.msg || 'Error creating task'
     if (alertRef.value) {
@@ -1160,6 +1159,12 @@ async function createAdminTask() {
     var errorMsg = error.response?.data?.msg || 'Error creating task'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
+=======
+  } catch (e) {
+    const errorMessage = e?.response?.data?.msg || 'Error creating task'
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+>>>>>>> 260f66b2ecfc2b51ffe1f521813def0c25ba73c1
     }
   }
   isLoadingTasks.value = false

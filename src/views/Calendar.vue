@@ -184,6 +184,7 @@
         </div>
       </div>
     </div>
+    <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
     <Alert ref="alertRef" />
   </Layout>
@@ -193,6 +194,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
+import Alert from '@/components/Alert.vue'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'
@@ -356,8 +358,8 @@ async function addEvent() {
         duration: 3000,
       })
     }
-  } catch (e) {
-    var errorMsg = e?.response?.data?.msg || 'Error adding event'
+  } catch (error) {
+    var errorMsg = error.response?.data?.msg || 'Error adding event'
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -387,8 +389,8 @@ async function deleteEvent(eventId) {
             duration: 3000,
           })
         }
-      } catch (e) {
-        var errorMsg = e?.response?.data?.msg || 'Error removing event'
+      } catch (error) {
+        var errorMsg = error.response?.data?.msg || 'Error removing event'
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {
