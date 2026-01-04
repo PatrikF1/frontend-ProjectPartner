@@ -132,6 +132,7 @@ import {
   CalendarIcon,
   ChartBarIcon,
   ArchiveBoxIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/vue/24/outline'
 import AIChatbot from './AIChatbot.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
@@ -181,6 +182,12 @@ const navigation = computed(() => [
     icon: ArchiveBoxIcon,
     current: route.path === '/archive',
   },
+  {
+    name: 'FAQ',
+    href: '/faq',
+    icon: QuestionMarkCircleIcon,
+    current: route.path === '/faq',
+  },
 ])
 
 function navigateTo(href) {
@@ -210,7 +217,7 @@ async function handleLogout() {
     cancelText: 'Cancel',
     onConfirm: async function () {
       authStore.logout()
-      router.push('/login')
+      router.replace('/login')
     },
   })
 }

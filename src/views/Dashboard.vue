@@ -4,7 +4,7 @@
       <div class="mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
           <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Hello, {{ userName }}!</h1>
+            <h1 class="text-3xl font-bold text-white mb-2">Hello, {{ getUserName() }}!</h1>
             <p class="text-gray-400">Overview of your projects and tasks</p>
           </div>
           <div class="flex items-center gap-6">
@@ -59,7 +59,7 @@
               </div>
               <h3 class="text-sm text-gray-400">Projects</h3>
             </div>
-            <p class="text-3xl font-bold text-white">{{ stats.projects }}</p>
+            <p class="text-3xl font-bold text-white">{{ getStats().projects }}</p>
           </div>
         </div>
 
@@ -88,7 +88,7 @@
               </div>
               <h3 class="text-sm text-gray-400">Tasks</h3>
             </div>
-            <p class="text-3xl font-bold text-white">{{ stats.tasks }}</p>
+            <p class="text-3xl font-bold text-white">{{ getStats().tasks }}</p>
           </div>
         </div>
 
@@ -117,13 +117,16 @@
               </div>
               <h3 class="text-sm text-gray-400">Completed</h3>
             </div>
-            <p class="text-3xl font-bold text-white">{{ stats.completed }}</p>
+            <p class="text-3xl font-bold text-white">{{ getStats().completed }}</p>
             <div class="mt-2">
               <div class="w-full bg-gray-700 rounded-full h-2">
                 <div
                   class="bg-green-500 h-2 rounded-full transition-all duration-500"
                   :style="{
-                    width: stats.tasks > 0 ? (stats.completed / stats.tasks) * 100 + '%' : '0%',
+                    width:
+                      getStats().tasks > 0
+                        ? (getStats().completed / getStats().tasks) * 100 + '%'
+                        : '0%',
                   }"
                 ></div>
               </div>
@@ -156,7 +159,7 @@
               </div>
               <h3 class="text-sm text-gray-400">{{ isAdmin ? 'Users' : 'Applications' }}</h3>
             </div>
-            <p class="text-3xl font-bold text-white">{{ stats.applications }}</p>
+            <p class="text-3xl font-bold text-white">{{ getStats().applications }}</p>
           </div>
         </div>
       </div>
@@ -172,7 +175,7 @@
                 class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
               >
                 <option value="">All Projects</option>
-                <option v-for="project in allProjects" :key="project._id" :value="project._id">
+                <option v-for="project in getAllProjects()" :key="project._id" :value="project._id">
                   {{ project.name }}
                 </option>
               </select>
@@ -184,7 +187,7 @@
                 class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
               >
                 <option value="">All Members</option>
-                <option v-for="user in memberUsers" :key="user._id" :value="user._id">
+                <option v-for="user in getMemberUsers()" :key="user._id" :value="user._id">
                   {{ user.name }} {{ user.lastname }}
                 </option>
               </select>
@@ -243,15 +246,15 @@
                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
                 <span class="text-sm text-gray-400">Done</span>
               </div>
-              <span class="text-2xl font-bold text-white">{{ taskPercent.done }}%</span>
+              <span class="text-2xl font-bold text-white">{{ getTaskPercent().done }}%</span>
             </div>
             <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
               <div
                 class="bg-green-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: taskPercent.done + '%' }"
+                :style="{ width: getTaskPercent().done + '%' }"
               ></div>
             </div>
-            <p class="text-xs text-gray-400">{{ taskCount.done }} tasks</p>
+            <p class="text-xs text-gray-400">{{ getTaskCount().done }} tasks</p>
           </div>
 
           <div class="bg-gray-700 rounded-lg p-4">
@@ -260,15 +263,15 @@
                 <div class="w-3 h-3 rounded-full bg-purple-500"></div>
                 <span class="text-sm text-gray-400">In Progress</span>
               </div>
-              <span class="text-2xl font-bold text-white">{{ taskPercent.inProgress }}%</span>
+              <span class="text-2xl font-bold text-white">{{ getTaskPercent().inProgress }}%</span>
             </div>
             <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
               <div
                 class="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: taskPercent.inProgress + '%' }"
+                :style="{ width: getTaskPercent().inProgress + '%' }"
               ></div>
             </div>
-            <p class="text-xs text-gray-400">{{ taskCount.inProgress }} tasks</p>
+            <p class="text-xs text-gray-400">{{ getTaskCount().inProgress }} tasks</p>
           </div>
 
           <div class="bg-gray-700 rounded-lg p-4">
@@ -277,15 +280,15 @@
                 <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <span class="text-sm text-gray-400">To-Do</span>
               </div>
-              <span class="text-2xl font-bold text-white">{{ taskPercent.todo }}%</span>
+              <span class="text-2xl font-bold text-white">{{ getTaskPercent().todo }}%</span>
             </div>
             <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
               <div
                 class="bg-yellow-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: taskPercent.todo + '%' }"
+                :style="{ width: getTaskPercent().todo + '%' }"
               ></div>
             </div>
-            <p class="text-xs text-gray-400">{{ taskCount.todo }} tasks</p>
+            <p class="text-xs text-gray-400">{{ getTaskCount().todo }} tasks</p>
           </div>
 
           <div class="bg-gray-700 rounded-lg p-4">
@@ -294,15 +297,15 @@
                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                 <span class="text-sm text-gray-400">Overdue</span>
               </div>
-              <span class="text-2xl font-bold text-white">{{ taskPercent.overdue }}%</span>
+              <span class="text-2xl font-bold text-white">{{ getTaskPercent().overdue }}%</span>
             </div>
             <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
               <div
                 class="bg-red-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: taskPercent.overdue + '%' }"
+                :style="{ width: getTaskPercent().overdue + '%' }"
               ></div>
             </div>
-            <p class="text-xs text-gray-400">{{ taskCount.overdue }} tasks</p>
+            <p class="text-xs text-gray-400">{{ getTaskCount().overdue }} tasks</p>
           </div>
         </div>
       </div>
@@ -320,7 +323,7 @@
           </div>
           <div class="space-y-3">
             <div
-              v-for="task in recentTasks"
+              v-for="task in getRecentTasks()"
               :key="task._id"
               class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 transition-all"
               :class="
@@ -371,7 +374,7 @@
                 {{ formatDate(task.deadline) }}
               </p>
             </div>
-            <p v-if="recentTasks.length === 0" class="text-gray-400 text-sm text-center py-4">
+            <p v-if="getRecentTasks().length === 0" class="text-gray-400 text-sm text-center py-4">
               No tasks yet
             </p>
           </div>
@@ -389,7 +392,7 @@
           </div>
           <div class="space-y-3">
             <div
-              v-for="task in upcomingDeadlines"
+              v-for="task in getUpcomingDeadlines()"
               :key="task._id"
               class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 transition-all"
               :class="
@@ -440,7 +443,10 @@
                 Due: {{ formatDate(task.deadline) }}
               </p>
             </div>
-            <p v-if="upcomingDeadlines.length === 0" class="text-gray-400 text-sm text-center py-4">
+            <p
+              v-if="getUpcomingDeadlines().length === 0"
+              class="text-gray-400 text-sm text-center py-4"
+            >
               No upcoming deadlines
             </p>
           </div>
@@ -458,7 +464,7 @@
           </div>
           <div class="space-y-3">
             <div
-              v-for="task in pastTasks"
+              v-for="task in getPastTasks()"
               :key="task._id"
               class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 transition-all"
               :class="task.status === 'completed' ? 'border-green-500' : 'border-red-500'"
@@ -495,7 +501,7 @@
                 {{ formatDate(task.deadline) }}
               </p>
             </div>
-            <p v-if="pastTasks.length === 0" class="text-gray-400 text-sm text-center py-4">
+            <p v-if="getPastTasks().length === 0" class="text-gray-400 text-sm text-center py-4">
               No past tasks
             </p>
           </div>
@@ -514,7 +520,7 @@
         </div>
         <div class="space-y-3">
           <div
-            v-for="app in pendingApplications"
+            v-for="app in getPendingApplications()"
             :key="app._id"
             class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer"
             @click="$router.push('/projects')"
@@ -530,7 +536,10 @@
             </div>
             <p class="text-xs text-gray-400">{{ app.description || 'No description' }}</p>
           </div>
-          <p v-if="pendingApplications.length === 0" class="text-gray-400 text-sm text-center py-4">
+          <p
+            v-if="getPendingApplications().length === 0"
+            class="text-gray-400 text-sm text-center py-4"
+          >
             No pending applications
           </p>
         </div>
@@ -545,38 +554,38 @@ import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 
-const authStore = useAuthStore()
-const isLoading = ref(false)
-const dashboardData = ref({})
-const currentTime = ref('')
-const currentDate = ref('')
-const adminFilterProject = ref('')
-const adminFilterMember = ref('')
-const adminFilterStatus = ref('')
-const adminFilterPriority = ref('')
+var authStore = useAuthStore()
+var isLoading = ref(false)
+var dashboardData = ref({})
+var currentTime = ref('')
+var currentDate = ref('')
+var adminFilterProject = ref('')
+var adminFilterMember = ref('')
+var adminFilterStatus = ref('')
+var adminFilterPriority = ref('')
 
-let timeInterval = null
+var timeInterval = null
 
-const isAdmin = computed(() => {
+var isAdmin = computed(() => {
   return authStore.user?.isAdmin === true
 })
 
-const userName = computed(() => {
+function getUserName() {
   if (authStore.user?.name && authStore.user?.lastname) {
     return authStore.user.name + ' ' + authStore.user.lastname
   }
   return authStore.user?.name || authStore.user?.email || 'User'
-})
+}
 
 function updateTime() {
-  const now = new Date()
-  const hours = now.getHours().toString().padStart(2, '0')
-  const minutes = now.getMinutes().toString().padStart(2, '0')
-  const seconds = now.getSeconds().toString().padStart(2, '0')
+  var now = new Date()
+  var hours = now.getHours().toString().padStart(2, '0')
+  var minutes = now.getMinutes().toString().padStart(2, '0')
+  var seconds = now.getSeconds().toString().padStart(2, '0')
   currentTime.value = hours + ':' + minutes + ':' + seconds
 
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const months = [
+  var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  var months = [
     'January',
     'February',
     'March',
@@ -600,179 +609,342 @@ function updateTime() {
     now.getFullYear()
 }
 
-const allTasks = computed(() => {
+function getAllTasks() {
   if (isAdmin.value) {
-    return filteredTasks.value.length ? filteredTasks.value : dashboardData.value.tasks || []
+    var filtered = getFilteredTasks()
+    if (filtered.length > 0) {
+      return filtered
+    }
+    return dashboardData.value.tasks || []
   }
   return dashboardData.value.myTasks || []
-})
+}
 
-const stats = computed(() => {
+function getStats() {
   if (isAdmin.value) {
-    const tasks = allTasks.value
+    var tasks = getAllTasks()
+    var completedCount = 0
+    for (var i = 0; i < tasks.length; i++) {
+      if (tasks[i].status === 'completed') {
+        completedCount++
+      }
+    }
     return {
-      projects: filteredProjects.value.length || dashboardData.value.projects || 0,
+      projects: getFilteredProjects().length || dashboardData.value.projects || 0,
       tasks: tasks.length,
-      completed: tasks.filter((t) => t.status === 'completed').length,
-      applications: filteredApplications.value.length || dashboardData.value.users || 0,
+      completed: completedCount,
+      applications: getFilteredApplications().length || dashboardData.value.users || 0,
+    }
+  }
+  var myTasks = dashboardData.value.myTasks || []
+  var myCompletedCount = 0
+  for (var j = 0; j < myTasks.length; j++) {
+    if (myTasks[j].status === 'completed') {
+      myCompletedCount++
     }
   }
   return {
     projects: dashboardData.value.myProjects?.length || 0,
-    tasks: dashboardData.value.myTasks?.length || 0,
-    completed: dashboardData.value.myTasks?.filter((t) => t.status === 'completed').length || 0,
+    tasks: myTasks.length,
+    completed: myCompletedCount,
     applications: dashboardData.value.myApplications?.length || 0,
   }
-})
+}
 
-const taskCount = computed(() => {
-  const tasks = allTasks.value
-  const today = new Date()
+function getTaskCount() {
+  var tasks = getAllTasks()
+  var today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  return {
-    done: tasks.filter((t) => t.status === 'completed').length,
-    inProgress: tasks.filter((t) => t.status === 'in-progress').length,
-    todo: tasks.filter((t) => t.status === 'not-started').length,
-    overdue: tasks.filter((t) => {
-      if (!t.deadline || t.status === 'completed') return false
-      return new Date(t.deadline).setHours(0, 0, 0, 0) < today.getTime()
-    }).length,
-  }
-})
+  var done = 0
+  var inProgress = 0
+  var todo = 0
+  var overdue = 0
 
-const taskPercent = computed(() => {
-  const total = allTasks.value.length
+  for (var i = 0; i < tasks.length; i++) {
+    var task = tasks[i]
+    if (task.status === 'completed') {
+      done++
+    } else if (task.status === 'in-progress') {
+      inProgress++
+      if (task.deadline) {
+        var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
+        if (taskDate < today.getTime()) {
+          overdue++
+        }
+      }
+    } else if (task.status === 'not-started') {
+      todo++
+      if (task.deadline) {
+        var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
+        if (taskDate < today.getTime()) {
+          overdue++
+        }
+      }
+    }
+  }
+
+  return {
+    done: done,
+    inProgress: inProgress,
+    todo: todo,
+    overdue: overdue,
+  }
+}
+
+function getTaskPercent() {
+  var total = getAllTasks().length
   if (!total) return { done: 0, inProgress: 0, todo: 0, overdue: 0 }
+  var counts = getTaskCount()
   return {
-    done: Math.round((taskCount.value.done / total) * 100),
-    inProgress: Math.round((taskCount.value.inProgress / total) * 100),
-    todo: Math.round((taskCount.value.todo / total) * 100),
-    overdue: Math.round((taskCount.value.overdue / total) * 100),
+    done: Math.round((counts.done / total) * 100),
+    inProgress: Math.round((counts.inProgress / total) * 100),
+    todo: Math.round((counts.todo / total) * 100),
+    overdue: Math.round((counts.overdue / total) * 100),
   }
-})
+}
 
-const recentTasks = computed(() => {
-  return allTasks.value
-    .sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.updatedAt || 0)
-      const dateB = new Date(b.createdAt || b.updatedAt || 0)
-      return dateB - dateA
-    })
-    .slice(0, 5)
-})
+function getRecentTasks() {
+  var tasks = getAllTasks()
+  var sorted = []
+  for (var i = 0; i < tasks.length; i++) {
+    sorted.push(tasks[i])
+  }
+  for (var j = 0; j < sorted.length - 1; j++) {
+    for (var k = 0; k < sorted.length - j - 1; k++) {
+      var dateA = new Date(sorted[k].createdAt || sorted[k].updatedAt || 0)
+      var dateB = new Date(sorted[k + 1].createdAt || sorted[k + 1].updatedAt || 0)
+      if (dateA < dateB) {
+        var temp = sorted[k]
+        sorted[k] = sorted[k + 1]
+        sorted[k + 1] = temp
+      }
+    }
+  }
+  var result = []
+  for (var l = 0; l < 5 && l < sorted.length; l++) {
+    result.push(sorted[l])
+  }
+  return result
+}
 
-const upcomingDeadlines = computed(() => {
-  const today = new Date()
+function getUpcomingDeadlines() {
+  var today = new Date()
   today.setHours(0, 0, 0, 0)
-  const in7Days = new Date(today)
+  var in7Days = new Date(today)
   in7Days.setDate(in7Days.getDate() + 7)
 
-  return allTasks.value
-    .filter((task) => {
-      if (!task.deadline || task.status === 'completed') return false
-      const taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
-      return taskDate >= today.getTime() && taskDate <= in7Days.getTime()
-    })
-    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-    .slice(0, 5)
-})
+  var tasks = getAllTasks()
+  var filtered = []
+  for (var i = 0; i < tasks.length; i++) {
+    var task = tasks[i]
+    if (task.deadline && task.status !== 'completed') {
+      var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
+      if (taskDate >= today.getTime() && taskDate <= in7Days.getTime()) {
+        filtered.push(task)
+      }
+    }
+  }
 
-const pastTasks = computed(() => {
-  const today = new Date()
+  for (var j = 0; j < filtered.length - 1; j++) {
+    for (var k = 0; k < filtered.length - j - 1; k++) {
+      var dateA = new Date(filtered[k].deadline)
+      var dateB = new Date(filtered[k + 1].deadline)
+      if (dateA > dateB) {
+        var temp = filtered[k]
+        filtered[k] = filtered[k + 1]
+        filtered[k + 1] = temp
+      }
+    }
+  }
+
+  var result = []
+  for (var l = 0; l < 5 && l < filtered.length; l++) {
+    result.push(filtered[l])
+  }
+  return result
+}
+
+function getPastTasks() {
+  var today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  return allTasks.value
-    .filter((task) => {
-      if (!task.deadline) return false
-      return (
-        new Date(task.deadline).setHours(0, 0, 0, 0) < today.getTime() ||
-        task.status === 'completed'
-      )
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.deadline || a.updatedAt || 0)
-      const dateB = new Date(b.deadline || b.updatedAt || 0)
-      return dateB - dateA
-    })
-    .slice(0, 5)
-})
+  var tasks = getAllTasks()
+  var filtered = []
+  for (var i = 0; i < tasks.length; i++) {
+    var task = tasks[i]
+    if (task.deadline) {
+      var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
+      if (taskDate < today.getTime() || task.status === 'completed') {
+        filtered.push(task)
+      }
+    }
+  }
+
+  for (var j = 0; j < filtered.length - 1; j++) {
+    for (var k = 0; k < filtered.length - j - 1; k++) {
+      var dateA = new Date(filtered[k].deadline || filtered[k].updatedAt || 0)
+      var dateB = new Date(filtered[k + 1].deadline || filtered[k + 1].updatedAt || 0)
+      if (dateA < dateB) {
+        var temp = filtered[k]
+        filtered[k] = filtered[k + 1]
+        filtered[k + 1] = temp
+      }
+    }
+  }
+
+  var result = []
+  for (var l = 0; l < 5 && l < filtered.length; l++) {
+    result.push(filtered[l])
+  }
+  return result
+}
 
 function getProjectName(projectId) {
-  const project = dashboardData.value.allProjects?.find(
-    (p) => p._id === projectId || p._id === projectId?._id,
-  )
-  return project?.name || 'Unknown'
+  var projects = dashboardData.value.allProjects || []
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i]
+    if (project._id === projectId || project._id === projectId?._id) {
+      return project.name || 'Unknown'
+    }
+  }
+  return 'Unknown'
 }
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
+  var date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
-const allProjects = computed(() => dashboardData.value.allProjects || [])
-const memberUsers = computed(
-  () => dashboardData.value.allUsers?.filter((user) => !user.isAdmin) || [],
-)
+function getAllProjects() {
+  return dashboardData.value.allProjects || []
+}
 
-const filteredTasks = computed(() => {
+function getMemberUsers() {
+  var users = dashboardData.value.allUsers || []
+  var result = []
+  for (var i = 0; i < users.length; i++) {
+    if (!users[i].isAdmin) {
+      result.push(users[i])
+    }
+  }
+  return result
+}
+
+function getFilteredTasks() {
   if (!isAdmin.value) return []
-  const tasks = dashboardData.value.tasks || []
-  return tasks.filter((task) => {
+  var tasks = dashboardData.value.tasks || []
+  var result = []
+  for (var i = 0; i < tasks.length; i++) {
+    var task = tasks[i]
+    var include = true
+
     if (adminFilterProject.value) {
-      const taskProjectId = task.projectId?._id || task.projectId
-      if (String(taskProjectId) !== String(adminFilterProject.value)) return false
+      var taskProjectId = task.projectId?._id || task.projectId
+      if (String(taskProjectId) !== String(adminFilterProject.value)) {
+        include = false
+      }
     }
-    if (adminFilterMember.value) {
-      const taskUserId = task.createdBy?._id || task.createdBy
-      if (String(taskUserId) !== String(adminFilterMember.value)) return false
+
+    if (include && adminFilterMember.value) {
+      var taskUserId = task.createdBy?._id || task.createdBy
+      if (String(taskUserId) !== String(adminFilterMember.value)) {
+        include = false
+      }
     }
-    if (adminFilterStatus.value && task.status !== adminFilterStatus.value) return false
-    if (adminFilterPriority.value && task.priority !== adminFilterPriority.value) return false
-    return true
-  })
-})
 
-const filteredProjects = computed(() => {
+    if (include && adminFilterStatus.value && task.status !== adminFilterStatus.value) {
+      include = false
+    }
+
+    if (include && adminFilterPriority.value && task.priority !== adminFilterPriority.value) {
+      include = false
+    }
+
+    if (include) {
+      result.push(task)
+    }
+  }
+  return result
+}
+
+function getFilteredProjects() {
   if (!isAdmin.value) return []
-  if (!adminFilterProject.value) return allProjects.value
-  return allProjects.value.filter(
-    (project) => String(project._id) === String(adminFilterProject.value),
-  )
-})
+  if (!adminFilterProject.value) return getAllProjects()
+  var projects = getAllProjects()
+  var result = []
+  for (var i = 0; i < projects.length; i++) {
+    if (String(projects[i]._id) === String(adminFilterProject.value)) {
+      result.push(projects[i])
+    }
+  }
+  return result
+}
 
-const filteredMembers = computed(() => {
-  if (!isAdmin.value || !adminFilterMember.value) return memberUsers.value
-  return memberUsers.value.filter((user) => String(user._id) === String(adminFilterMember.value))
-})
+function getFilteredMembers() {
+  if (!isAdmin.value || !adminFilterMember.value) return getMemberUsers()
+  var users = getMemberUsers()
+  var result = []
+  for (var i = 0; i < users.length; i++) {
+    if (String(users[i]._id) === String(adminFilterMember.value)) {
+      result.push(users[i])
+    }
+  }
+  return result
+}
 
-const filteredApplications = computed(() => {
+function getFilteredApplications() {
   if (!isAdmin.value) return []
-  const apps = dashboardData.value.applications || []
-  return apps.filter((app) => {
+  var apps = dashboardData.value.applications || []
+  var result = []
+  for (var i = 0; i < apps.length; i++) {
+    var app = apps[i]
+    var include = true
+
     if (adminFilterProject.value) {
-      const appProjectId = app.projectId?._id || app.projectId
-      if (String(appProjectId) !== String(adminFilterProject.value)) return false
+      var appProjectId = app.projectId?._id || app.projectId
+      if (String(appProjectId) !== String(adminFilterProject.value)) {
+        include = false
+      }
     }
-    if (adminFilterMember.value) {
-      const appUserId = app.createdBy?._id || app.createdBy
-      if (String(appUserId) !== String(adminFilterMember.value)) return false
-    }
-    return true
-  })
-})
 
-const pendingApplications = computed(() => {
+    if (include && adminFilterMember.value) {
+      var appUserId = app.createdBy?._id || app.createdBy
+      if (String(appUserId) !== String(adminFilterMember.value)) {
+        include = false
+      }
+    }
+
+    if (include) {
+      result.push(app)
+    }
+  }
+  return result
+}
+
+function getPendingApplications() {
   if (!isAdmin.value) return []
-  const apps = filteredApplications.value.length
-    ? filteredApplications.value
-    : dashboardData.value.applications || []
-  return apps.filter((app) => app.status === 'pending').slice(0, 5)
-})
+  var filtered = getFilteredApplications()
+  var apps = []
+  if (filtered.length > 0) {
+    apps = filtered
+  } else {
+    apps = dashboardData.value.applications || []
+  }
+  var result = []
+  for (var i = 0; i < apps.length; i++) {
+    if (apps[i].status === 'pending') {
+      result.push(apps[i])
+      if (result.length >= 5) break
+    }
+  }
+  return result
+}
 
 function clearFilters() {
   adminFilterProject.value = ''
@@ -785,31 +957,49 @@ async function loadData() {
   isLoading.value = true
   try {
     if (isAdmin.value) {
-      const [usersRes, projectsRes, tasksRes, appsRes] = await Promise.all([
-        backend.get('/api/users'),
-        backend.get('/api/projects'),
-        backend.get('/api/tasks'),
-        backend.get('/api/applications'),
-      ])
+      var usersRes = await backend.get('/api/users')
+      var projectsRes = await backend.get('/api/projects')
+      var tasksRes = await backend.get('/api/tasks')
+      var appsRes = await backend.get('/api/applications')
+
+      var userCount = 0
+      for (var i = 0; i < usersRes.data.length; i++) {
+        if (!usersRes.data[i].isAdmin) {
+          userCount++
+        }
+      }
+
+      var completedCount = 0
+      var tasks = tasksRes.data || []
+      for (var j = 0; j < tasks.length; j++) {
+        if (tasks[j].status === 'completed') {
+          completedCount++
+        }
+      }
+
       dashboardData.value = {
-        users: usersRes.data.filter((u) => !u.isAdmin).length,
+        users: userCount,
         projects: projectsRes.data.length,
-        tasks: tasksRes.data || [],
-        completed: tasksRes.data?.filter((t) => t.status === 'completed').length || 0,
+        tasks: tasks,
+        completed: completedCount,
         applications: appsRes.data || [],
         allProjects: projectsRes.data || [],
         allUsers: usersRes.data || [],
       }
     } else {
-      const dashboardResponse = await backend.get('/api/users/dashboard')
-      const data = dashboardResponse.data
-      const userId = authStore.user?._id
-      const tasksResponse = await backend.get('/api/tasks')
-      const allUserTasks =
-        tasksResponse.data?.filter((task) => {
-          const taskUserId = task.createdBy?._id || task.createdBy
-          return String(taskUserId) === String(userId)
-        }) || []
+      var dashboardResponse = await backend.get('/api/users/dashboard')
+      var data = dashboardResponse.data
+      var userId = authStore.user?._id
+      var tasksResponse = await backend.get('/api/tasks')
+      var allUserTasks = []
+      var allTasks = tasksResponse.data || []
+      for (var k = 0; k < allTasks.length; k++) {
+        var task = allTasks[k]
+        var taskUserId = task.createdBy?._id || task.createdBy
+        if (String(taskUserId) === String(userId)) {
+          allUserTasks.push(task)
+        }
+      }
 
       dashboardData.value = {
         myProjects: data.myProjects || [],
@@ -817,8 +1007,8 @@ async function loadData() {
         myApplications: data.myApplications || [],
       }
     }
-  } catch (e) {
-    console.error('Error loading data:', e)
+  } catch (error) {
+    console.error('Error loading data:', error)
   }
   isLoading.value = false
 }

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 // @ts-ignore
 import Home from '@/views/Home.vue'
 // @ts-ignore
@@ -18,6 +19,8 @@ import Tasks from '@/views/Tasks.vue'
 import Archive from '@/views/Archive.vue'
 // @ts-ignore
 import Profile from '@/views/Profile.vue'
+// @ts-ignore
+import FAQ from '@/views/FAQ.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,7 +74,32 @@ const router = createRouter({
       name: 'profile',
       component: Profile,
     },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: FAQ,
+    },
   ],
+})
+
+var publicRoutes = ['/home', '/login', '/registration']
+
+router.beforeEach((to, from, next) => {
+  var authStore = useAuthStore()
+  var isPublicRoute = false
+
+  for (var i = 0; i < publicRoutes.length; i++) {
+    if (to.path === publicRoutes[i]) {
+      isPublicRoute = true
+      break
+    }
+  }
+
+  if (!isPublicRoute && !authStore.user) {
+    next('/login')
+  } else {
+    next()
+  }
 })
 
 export default router

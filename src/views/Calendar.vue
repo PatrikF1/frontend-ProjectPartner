@@ -1,68 +1,77 @@
 <template>
   <Layout>
-    <div class="min-h-screen p-6 space-y-6">
-      <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-          <div class="flex items-center gap-4">
+    <div class="min-h-screen p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
+      <div class="bg-gray-800 rounded-lg shadow-lg p-3 sm:p-4 md:p-6 overflow-x-auto">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0"
+        >
+          <div class="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <button
               @click="previousMonth"
-              class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-600"
+              class="px-2 sm:px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-600 text-sm sm:text-base"
             >
               ←
             </button>
-            <div>
-              <h2 class="text-xl font-semibold text-white">
+            <div class="flex-1 sm:flex-none">
+              <h2 class="text-lg sm:text-xl font-semibold text-white">
                 {{ currentMonthYear }}
               </h2>
-              <p class="text-sm text-gray-400">Today: {{ todayDate }}</p>
+              <p class="text-xs sm:text-sm text-gray-400">Today: {{ todayDate }}</p>
             </div>
             <button
               @click="nextMonth"
-              class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-600"
+              class="px-2 sm:px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-600 text-sm sm:text-base"
             >
               →
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-7 gap-2 mb-4">
-          <div
-            v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
-            :key="day"
-            class="text-center text-gray-400 font-medium text-sm py-2"
-          >
-            {{ day }}
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-7 gap-2">
-          <div
-            v-for="day in calendarDays"
-            :key="day.date"
-            @click="handleDayClick(day.date)"
-            :class="[
-              'min-h-24 p-2 border border-gray-700 rounded cursor-pointer hover:bg-gray-600 transition',
-              day.isCurrentMonth ? 'bg-gray-700' : 'bg-gray-800 opacity-50',
-              day.isToday ? 'ring-2 ring-indigo-500' : '',
-            ]"
-          >
-            <div class="text-gray-300 text-sm font-medium mb-1">{{ day.day }}</div>
-            <div class="space-y-1">
+        <div class="overflow-x-auto -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6">
+          <div class="min-w-[700px]">
+            <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-4">
               <div
-                v-for="event in getEventsForDay(day.date)"
-                :key="event._id"
-                @click.stop="toggleEventPopup(event)"
+                v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
+                :key="day"
+                class="text-center text-gray-400 font-medium text-xs sm:text-sm py-1 sm:py-2"
+              >
+                {{ day }}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 sm:gap-2">
+              <div
+                v-for="day in calendarDays"
+                :key="day.date"
+                @click="handleDayClick(day.date)"
                 :class="[
-                  'text-xs p-1 rounded cursor-pointer hover:opacity-80',
-                  event.isAdminEvent
-                    ? 'bg-yellow-600 text-white'
-                    : event.taskId || event.task
-                      ? 'bg-green-600 text-white'
-                      : 'bg-indigo-600 text-white',
+                  'min-h-16 sm:min-h-20 md:min-h-24 p-1 sm:p-2 border border-gray-700 rounded cursor-pointer hover:bg-gray-600 transition',
+                  day.isCurrentMonth ? 'bg-gray-700' : 'bg-gray-800 opacity-50',
+                  day.isToday ? 'ring-1 sm:ring-2 ring-indigo-500' : '',
                 ]"
               >
-                {{ event.title || 'No title' }}
-                <span v-if="event.taskId || event.task" class="ml-1">📋</span>
+                <div class="text-gray-300 text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">
+                  {{ day.day }}
+                </div>
+                <div class="space-y-0.5 sm:space-y-1">
+                  <div
+                    v-for="event in getEventsForDay(day.date)"
+                    :key="event._id"
+                    @click.stop="toggleEventPopup(event)"
+                    :class="[
+                      'text-[10px] sm:text-xs p-0.5 sm:p-1 rounded cursor-pointer hover:opacity-80 truncate',
+                      event.isAdminEvent
+                        ? 'bg-yellow-600 text-white'
+                        : event.taskId || event.task
+                          ? 'bg-green-600 text-white'
+                          : 'bg-indigo-600 text-white',
+                    ]"
+                    :title="event.title || 'No title'"
+                  >
+                    {{ event.title || 'No title' }}
+                    <span v-if="event.taskId || event.task" class="ml-0.5 sm:ml-1">📋</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -76,11 +85,14 @@
       >
         <div
           @click.stop
-          class="bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+          class="bg-gray-800 rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-white">{{ selectedEvent.title }}</h3>
-            <button @click="selectedEvent = null" class="text-gray-400 hover:text-white text-xl">
+            <h3 class="text-base sm:text-lg font-semibold text-white">{{ selectedEvent.title }}</h3>
+            <button
+              @click="selectedEvent = null"
+              class="text-gray-400 hover:text-white text-xl flex-shrink-0 ml-2"
+            >
               ×
             </button>
           </div>
@@ -124,13 +136,13 @@
       >
         <div
           @click.stop
-          class="bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+          class="bg-gray-800 rounded-lg shadow-xl p-4 sm:p-6 max-w-md w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-white">Add Event</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-white">Add Event</h3>
             <button
               @click="showAddEventForm = false"
-              class="text-gray-400 hover:text-white text-xl"
+              class="text-gray-400 hover:text-white text-xl flex-shrink-0 ml-2"
             >
               ×
             </button>

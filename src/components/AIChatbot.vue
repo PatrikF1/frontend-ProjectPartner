@@ -3,7 +3,7 @@
     <button
       v-if="!isOpen"
       @click="isOpen = true"
-      class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 flex items-center justify-center z-50 transition-colors"
+      class="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 flex items-center justify-center z-50 transition-colors"
     >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -17,10 +17,10 @@
 
     <div
       v-if="isOpen"
-      class="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-lg shadow-2xl z-50 flex flex-col border border-gray-200"
+      class="fixed bottom-6 right-6 w-96 h-[600px] bg-gray-800 rounded-lg shadow-2xl z-50 flex flex-col border border-gray-700"
     >
-      <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-        <h3 class="font-semibold text-lg">AI Assistant</h3>
+      <div class="bg-indigo-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+        <h3 class="font-semibold text-lg">ProjectPartner AI</h3>
         <button @click="isOpen = false" class="text-white hover:text-gray-200 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -33,7 +33,7 @@
         </button>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-900">
         <div
           v-for="message in messages"
           :key="message.id"
@@ -44,8 +44,8 @@
             class="max-w-[75%] rounded-lg px-4 py-2"
             :class="
               message.role === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-800 border border-gray-200'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-700 text-gray-200 border border-gray-600'
             "
           >
             <p class="text-sm leading-relaxed">{{ message.content }}</p>
@@ -53,25 +53,25 @@
         </div>
 
         <div v-if="isLoading" class="flex justify-start">
-          <div class="bg-white text-gray-600 rounded-lg px-4 py-2 border border-gray-200">
+          <div class="bg-gray-700 text-gray-300 rounded-lg px-4 py-2 border border-gray-600">
             <p class="text-sm">Thinking...</p>
           </div>
         </div>
       </div>
 
-      <div class="p-4 border-t border-gray-200 bg-white rounded-b-lg">
+      <div class="p-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
         <form @submit.prevent="handleSubmit" class="flex gap-2">
           <input
             v-model="input"
             type="text"
             placeholder="Type your message..."
-            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             :disabled="isLoading"
           />
           <button
             type="submit"
             :disabled="isLoading || !input.trim()"
-            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Send
           </button>
