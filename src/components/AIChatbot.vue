@@ -107,26 +107,64 @@ async function handleSubmit() {
   isLoading.value = true
 
   try {
-    const userProjects = await backend.get('/api/projects')
-    const userTasks = await backend.get('/api/tasks')
-    const userApplications = await backend.get('/api/applications')
+    var userProjects = []
+    var userTasks = []
+    var userApplications = []
 
-    const context = {
-      userId: authStore.user?._id,
-      projects: userProjects.data || [],
-      tasks: userTasks.data || [],
-      applications: userApplications.data || [],
+    if (authStore.user?.isAdmin) {
+      var projectsRes = await backend.get('/api/projects')
+      userProjects = projectsRes.data || []
+
+      var tasksRes = await backend.get('/api/tasks')
+      userTasks = tasksRes.data || []
+
+      var appsRes = await backend.get('/api/applications')
+      userApplications = appsRes.data || []
+    } else {
+      var dashboardRes = await backend.get('/api/users/dashboard')
+      var dashboardData = dashboardRes.data
+      userProjects = dashboardData.myProjects || []
+      userApplications = dashboardData.myApplications || []
+
+      var myTasksRes = await backend.get('/api/tasks/my')
+      userTasks = myTasksRes.data || []
     }
 
-    const response = await backend.post('/api/chat', {
+    var context = {
+      userId: authStore.user?._id,
+      projects: userProjects,
+      tasks: userTasks,
+      applications: userApplications,
+    }
+
+    var response = await backend.post('/api/chat', {
       message: userMessage,
       context: context,
     })
 
+    var responseMessage =
+      response.data.message || "I apologize, but I couldn't process your request."
+
+    if (response.data.actions && response.data.actions.length > 0) {
+      var hasSuccess = false
+      for (var i = 0; i < response.data.actions.length; i++) {
+        if (response.data.actions[i].success) {
+          hasSuccess = true
+          break
+        }
+      }
+
+      if (hasSuccess) {
+        setTimeout(function () {
+          window.location.reload()
+        }, 1500)
+      }
+    }
+
     messages.value.push({
       id: Date.now() + 1,
       role: 'assistant',
-      content: response.data.message || "I apologize, but I couldn't process your request.",
+      content: responseMessage,
     })
   } catch (error) {
     const errorMessage =
