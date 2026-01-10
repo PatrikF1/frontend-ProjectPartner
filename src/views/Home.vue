@@ -73,14 +73,6 @@
           <h3 class="text-xl font-semibold mb-3">Projects</h3>
           <p class="text-gray-400">Organize your projects by categories and track their progress</p>
         </div>
-
-        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
-          <div class="text-indigo-400 text-4xl mb-4">🗄️</div>
-          <h3 class="text-xl font-semibold mb-3">Archive</h3>
-          <p class="text-gray-400">
-            Keep completed projects and tasks in the archive for easy reference
-          </p>
-        </div>
       </div>
     </div>
   </div>

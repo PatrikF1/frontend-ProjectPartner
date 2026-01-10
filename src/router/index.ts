@@ -16,8 +16,6 @@ import Calendar from '@/views/Calendar.vue'
 // @ts-ignore
 import Tasks from '@/views/Tasks.vue'
 // @ts-ignore
-import Archive from '@/views/Archive.vue'
-// @ts-ignore
 import Profile from '@/views/Profile.vue'
 // @ts-ignore
 import FAQ from '@/views/FAQ.vue'
@@ -63,11 +61,6 @@ const router = createRouter({
       path: '/tasks',
       name: 'tasks',
       component: Tasks,
-    },
-    {
-      path: '/archive',
-      name: 'archive',
-      component: Archive,
     },
     {
       path: '/profile',

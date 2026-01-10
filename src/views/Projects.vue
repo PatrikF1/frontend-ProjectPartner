@@ -193,10 +193,10 @@
                 </button>
                 <button
                   v-if="isAdmin"
-                  @click="adminDeleteProject(project._id)"
-                  class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                  @click="adminEndProject(project._id)"
+                  class="px-2 py-1 bg-orange-600 text-white text-xs rounded-md hover:bg-orange-700"
                 >
-                  Delete
+                  End Project
                 </button>
               </div>
             </div>
@@ -459,7 +459,6 @@
     </div>
     <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
-    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -712,27 +711,42 @@ async function adminUpdateProject() {
   loading.value = false
 }
 
-async function adminDeleteProject(projectId) {
+async function adminEndProject(projectId) {
   confirmDialogRef.value.show({
     type: 'danger',
-    title: 'Delete Project',
-    message: 'Are you sure you want to delete this project? This action cannot be undone.',
-    confirmText: 'Delete',
+    title: 'End Project',
+    message:
+      'Are you sure you want to end this project? A PDF report will be generated with student statistics before the project is deleted. This action cannot be undone.',
+    confirmText: 'End Project',
     cancelText: 'Cancel',
     onConfirm: async function () {
       loading.value = true
       try {
-        await backend.delete('/api/projects/' + projectId)
+        var response = await backend.post('/api/projects/' + projectId + '/end', {})
+
+        if (response.data.pdfUrl) {
+          var link = document.createElement('a')
+          link.href = response.data.pdfUrl
+          link.download = 'project-report-' + projectId + '.pdf'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+
         projects.value = projects.value.filter((project) => project._id !== projectId)
         selectedProjectId.value = ''
         if (alertRef.value) {
-          alertRef.value.show('success', 'Project deleted successfully!', {
-            autoClose: true,
-            duration: 3000,
-          })
+          alertRef.value.show(
+            'success',
+            'Project ended successfully! PDF report has been generated and downloaded.',
+            {
+              autoClose: true,
+              duration: 5000,
+            },
+          )
         }
       } catch (error) {
-        var errorMsg = error.response?.data?.msg || 'Error deleting project'
+        var errorMsg = error.response?.data?.msg || 'Error ending project'
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

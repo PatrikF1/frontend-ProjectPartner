@@ -45,7 +45,7 @@
               v-model="applicationForm.description"
               rows="4"
               required
-              placeholder="Describe your project..."
+              placeholder="Here you must include your github repository link/other storage link and the project description"
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             ></textarea>
           </div>
@@ -385,10 +385,11 @@
                             Complete
                           </button>
                           <button
-                            @click="archiveTask(task._id)"
+                            v-if="isTaskCreatedByUser(task)"
+                            @click="deleteTask(task._id)"
                             class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium"
                           >
-                            Archive
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -553,20 +554,34 @@
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Description</th>
                 <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Priority</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Deadline</th>
+                <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr
                 v-for="(task, index) in getFilteredAdminTasks()"
                 :key="task._id"
-                @click="toggleTaskPopup(task)"
-                class="bg-gray-600 border-b border-gray-700 hover:bg-gray-500 cursor-pointer transition"
+                class="bg-gray-600 border-b border-gray-700 hover:bg-gray-500 transition"
               >
-                <td class="px-6 py-4 text-gray-300 text-base align-middle">{{ index + 1 }}</td>
-                <td class="px-6 py-4 text-white font-medium text-base align-middle">
+                <td
+                  class="px-6 py-4 text-gray-300 text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
+                  {{ index + 1 }}
+                </td>
+                <td
+                  class="px-6 py-4 text-white font-medium text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   {{ task.name }}
                 </td>
-                <td class="px-6 py-4 text-center align-middle">
+                <td
+                  class="px-6 py-4 text-center align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   <span
                     :class="
                       task.status === 'completed'
@@ -580,16 +595,32 @@
                     {{ task.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                <td
+                  class="px-6 py-4 text-gray-300 text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   {{ task.projectId?.name || 'Unknown' }}
                 </td>
-                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                <td
+                  class="px-6 py-4 text-gray-300 text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   {{ task.createdBy?.name || task.createdBy?.email || 'Unknown' }}
                 </td>
-                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                <td
+                  class="px-6 py-4 text-gray-300 text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   {{ task.description || '-' }}
                 </td>
-                <td class="px-6 py-4 text-center align-middle">
+                <td
+                  class="px-6 py-4 text-center align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   <span
                     :class="
                       task.priority === 'high'
@@ -603,8 +634,22 @@
                     {{ task.priority || 'medium' }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-gray-300 text-base align-middle">
+                <td
+                  class="px-6 py-4 text-gray-300 text-base align-middle"
+                  @click="toggleTaskPopup(task)"
+                  style="cursor: pointer"
+                >
                   {{ formatDeadline(task.deadline) }}
+                </td>
+                <td class="px-6 py-4 text-center align-middle" @click.stop>
+                  <button
+                    v-if="isTaskCreatedByAdmin(task)"
+                    @click="deleteTask(task._id)"
+                    class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 font-medium"
+                  >
+                    Delete
+                  </button>
+                  <span v-else class="text-gray-500 text-xs">-</span>
                 </td>
               </tr>
             </tbody>
@@ -702,10 +747,11 @@
                 Complete Task
               </button>
               <button
-                @click="archiveTask(selectedTask._id)"
+                v-if="isTaskCreatedByUser(selectedTask)"
+                @click="deleteTask(selectedTask._id)"
                 class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
-                Archive Task
+                Delete Task
               </button>
             </div>
           </div>
@@ -776,6 +822,19 @@ var adminTaskForm = reactive({
 var isAdmin = computed(() => {
   return authStore.user?.isAdmin === true
 })
+
+function isTaskCreatedByAdmin(task) {
+  if (!isAdmin.value) return false
+  var adminId = authStore.user?._id
+  var taskCreatorId = task.createdBy?._id || task.createdBy
+  return String(adminId) === String(taskCreatorId)
+}
+
+function isTaskCreatedByUser(task) {
+  var userId = authStore.user?._id
+  var taskCreatorId = task.createdBy?._id || task.createdBy
+  return String(userId) === String(taskCreatorId)
+}
 
 var myProjects = ref([])
 var myApplications = ref([])
@@ -849,7 +908,6 @@ function getFilteredTasksForApp(app) {
 
   for (var i = 0; i < allTasks.value.length; i++) {
     var task = allTasks.value[i]
-    if (task.isArchived) continue
 
     var taskProjectId = task.projectId?._id || task.projectId
     var taskApplicationId = task.applicationId?._id || task.applicationId
@@ -969,12 +1027,7 @@ async function loadAdminTasks() {
     var response = await backend.get('/api/tasks')
     var allTasksData = response.data || []
 
-    displayedAdminTasks.value = []
-    for (var i = 0; i < allTasksData.length; i++) {
-      if (!allTasksData[i].isArchived) {
-        displayedAdminTasks.value.push(allTasksData[i])
-      }
-    }
+    displayedAdminTasks.value = allTasksData
   } catch (error) {
     errorMessage.value = 'Error loading tasks'
     console.error(error)
@@ -1230,30 +1283,34 @@ async function updateTaskStatus(taskId, newStatus) {
   isLoadingTasks.value = false
 }
 
-async function archiveTask(taskId) {
+async function deleteTask(taskId) {
   confirmDialogRef.value.show({
     type: 'danger',
-    title: 'Archive Task',
-    message: 'Are you sure you want to archive this task?',
-    confirmText: 'Archive',
+    title: 'Delete Task',
+    message: 'Are you sure you want to permanently delete this task? This action cannot be undone.',
+    confirmText: 'Delete',
     cancelText: 'Cancel',
     onConfirm: async function () {
       isLoadingTasks.value = true
       try {
-        await backend.put('/api/tasks/' + taskId + '/archive')
+        await backend.delete('/api/tasks/' + taskId)
         if (selectedTask.value && selectedTask.value._id === taskId) {
           showTaskPopup.value = false
           selectedTask.value = null
         }
-        await loadTasks()
+        if (isAdmin.value) {
+          await loadAdminTasks()
+        } else {
+          await loadTasks()
+        }
         if (alertRef.value) {
-          alertRef.value.show('success', 'Task archived successfully!', {
+          alertRef.value.show('success', 'Task deleted successfully!', {
             autoClose: true,
             duration: 3000,
           })
         }
       } catch (error) {
-        var errorMsg = error.response?.data?.msg || 'Error archiving task'
+        var errorMsg = error.response?.data?.msg || 'Error deleting task'
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

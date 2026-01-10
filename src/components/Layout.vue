@@ -131,7 +131,6 @@ import {
   FolderIcon,
   CalendarIcon,
   ChartBarIcon,
-  ArchiveBoxIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/vue/24/outline'
 import AIChatbot from './AIChatbot.vue'
@@ -175,12 +174,6 @@ const navigation = computed(() => [
     href: '/tasks',
     icon: ChartBarIcon,
     current: route.path === '/tasks',
-  },
-  {
-    name: 'Archive',
-    href: '/archive',
-    icon: ArchiveBoxIcon,
-    current: route.path === '/archive',
   },
   {
     name: 'FAQ',

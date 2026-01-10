@@ -84,12 +84,12 @@ var faqs = reactive([
   {
     question: 'How do I use ProjectPartner?',
     answer:
-      'After logging in, you will see the <strong>Dashboard</strong> with an overview of your projects and tasks. As a member, you can submit project applications, join projects, create tasks for approved applications, and manage your work. Admins can create projects, approve/reject applications, assign tasks to members, and manage all projects and users. Use the navigation menu to access different sections: Dashboard, Projects, Calendar, Tasks, and Archive.',
+      'After logging in, you will see the <strong>Dashboard</strong> with an overview of your projects and tasks. As a member, you can submit project applications, join projects, create tasks for approved applications, and manage your work. Admins can create projects, approve/reject applications, assign tasks to members, and manage all projects and users. Use the navigation menu to access different sections: Dashboard, Projects, Calendar, and Tasks.',
   },
   {
     question: 'What can I do in ProjectPartner?',
     answer:
-      'You can: <strong>Submit project applications</strong> to join projects, <strong>create and manage tasks</strong> for your approved applications, <strong>track task status</strong> (not started, in progress, completed), <strong>set deadlines and priorities</strong>, <strong>add calendar events</strong>, <strong>view tasks assigned by admins</strong>, <strong>archive completed tasks</strong>, and <strong>use the AI Helper</strong> for assistance. Admins have additional features like creating projects, managing applications, and viewing all users and tasks.',
+      'You can: <strong>Submit project applications</strong> to join projects, <strong>create and manage tasks</strong> for your approved applications, <strong>track task status</strong> (not started, in progress, completed), <strong>set deadlines and priorities</strong>, <strong>add calendar events</strong>, <strong>view tasks assigned by admins</strong>, <strong>delete your own tasks</strong>, and <strong>use the AI Helper</strong> for assistance. Admins have additional features like creating projects, managing applications, and viewing all users and tasks.',
   },
   {
     question: 'What is the difference between a member and an admin?',
@@ -137,14 +137,9 @@ var faqs = reactive([
       'As a member, go to the <strong>Tasks</strong> page. You will see all tasks for projects where you are a member, including tasks created by admins. Tasks are organized by your approved applications.',
   },
   {
-    question: 'How do I archive a task?',
-    answer:
-      'Click on a task in the <strong>Tasks</strong> page to open its details. Click the "Archive" button. Archived tasks can be viewed in the <strong>Archive</strong> page.',
-  },
-  {
     question: 'How do I delete a task?',
     answer:
-      'Go to the <strong>Archive</strong> page. Find the archived task you want to delete. Click the "Delete" button and confirm the deletion. This action cannot be undone.',
+      'You can delete tasks that you created. Click on a task in the <strong>Tasks</strong> page to open its details, then click the "Delete Task" button and confirm the deletion. This action cannot be undone. Admins can delete tasks they created from the admin tasks table.',
   },
   {
     question: 'What is the Dashboard for?',
@@ -190,11 +185,6 @@ var faqs = reactive([
     question: 'How do I filter tasks?',
     answer:
       'On the <strong>Tasks</strong> page, you can filter tasks by project using the "Filter by Project" dropdown, by status using "Filter by Status", and search tasks using the search box. Click "Clear Filters" to reset.',
-  },
-  {
-    question: 'What happens when I archive a task?',
-    answer:
-      'Archived tasks are moved from the active tasks list to the <strong>Archive</strong> page. They are no longer visible in the main Tasks view but can be viewed and deleted from the Archive.',
   },
 ])
 </script>
