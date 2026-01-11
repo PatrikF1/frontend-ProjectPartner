@@ -673,6 +673,7 @@ import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'
+import { formatDeadline } from '@/utils/date.js'
 
 var authStore = useAuthStore()
 var applicationsStore = useApplicationsStore()
