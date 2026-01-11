@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { backend } from '@/services/backend'
 
@@ -6,8 +6,6 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const token = ref(localStorage.getItem('token'))
   const isLoading = ref(false)
-
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
 
   function setUser(userData: any) {
     user.value = userData
@@ -44,7 +42,6 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     token,
     isLoading,
-    isAuthenticated,
     setUser,
     setToken,
     logout,

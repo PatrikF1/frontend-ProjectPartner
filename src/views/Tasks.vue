@@ -415,13 +415,6 @@
             placeholder="Description"
             class="w-full px-3 py-2 bg-gray-600 text-white rounded"
           ></textarea>
-          <div class="flex gap-2">
-            <input
-              v-model="adminTaskForm.deadline"
-              type="date"
-              class="px-3 py-2 bg-gray-600 text-white rounded"
-            />
-          </div>
           <button
             type="submit"
             :disabled="isLoadingTasks"
@@ -721,7 +714,6 @@ var adminTaskForm = reactive({
   projectId: '',
   name: '',
   description: '',
-  deadline: '',
 })
 
 var isAdmin = computed(() => {
@@ -861,17 +853,6 @@ function getFilteredTasksForApp(app) {
 }
 
 var allTasks = ref([])
-var calendarEvents = ref([])
-
-async function loadCalendarEvents() {
-  try {
-    var response = await backend.get('/api/calendar/events')
-    calendarEvents.value = response.data || []
-  } catch (error) {
-    errorMessage.value = 'Error loading calendar events'
-    console.error(error)
-  }
-}
 
 async function loadTasks() {
   isLoadingTasks.value = true
@@ -1062,7 +1043,6 @@ async function createTask(app) {
         projectId: app.projectId._id || app.projectId,
         taskId: createdTask._id,
       })
-      await loadCalendarEvents()
     }
 
     newTaskForm.name = ''
@@ -1097,14 +1077,12 @@ async function createAdminTask() {
       projectId: adminTaskForm.projectId,
       name: adminTaskForm.name,
       description: adminTaskForm.description,
-      deadline: adminTaskForm.deadline || null,
       status: 'not-started',
     })
     Object.assign(adminTaskForm, {
       projectId: '',
       name: '',
       description: '',
-      deadline: '',
     })
     showAdminTaskForm.value = false
     await loadTasks()
@@ -1200,7 +1178,6 @@ async function deleteTask(taskId) {
 
 onMounted(async () => {
   await loadAllData()
-  await loadCalendarEvents()
   if (isAdmin.value) {
     await loadTasks()
   } else {
