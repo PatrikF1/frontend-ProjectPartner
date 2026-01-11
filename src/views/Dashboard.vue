@@ -164,68 +164,33 @@
         </div>
       </div>
 
-      <div v-if="isAdmin" class="mb-6">
+      <div class="mb-6">
         <div class="bg-gray-800 rounded-lg shadow-lg p-4">
-          <h3 class="text-lg font-semibold text-white mb-3">Filters</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-sm text-gray-400 mb-2">Filter by Project</label>
+          <h3 class="text-lg font-semibold text-white mb-3">Filter by Project</h3>
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
               <select
-                v-model="adminFilterProject"
+                v-model="selectedProjectFilter"
                 class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
               >
                 <option value="">All Projects</option>
-                <option v-for="project in getAllProjects()" :key="project._id" :value="project._id">
+                <option
+                  v-for="project in getAvailableProjects()"
+                  :key="project._id"
+                  :value="project._id"
+                >
                   {{ project.name }}
                 </option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm text-gray-400 mb-2">Filter by Member</label>
-              <select
-                v-model="adminFilterMember"
-                class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
-              >
-                <option value="">All Members</option>
-                <option v-for="user in getMemberUsers()" :key="user._id" :value="user._id">
-                  {{ user.name }} {{ user.lastname }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm text-gray-400 mb-2">Filter by Status</label>
-              <select
-                v-model="adminFilterStatus"
-                class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
-              >
-                <option value="">All Status</option>
-                <option value="not-started">Not Started</option>
-                <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm text-gray-400 mb-2">Filter by Priority</label>
-              <select
-                v-model="adminFilterPriority"
-                class="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600"
-              >
-                <option value="">All Priority</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
+            <button
+              v-if="selectedProjectFilter"
+              @click="clearFilters"
+              class="px-4 py-2 bg-gray-700 text-white text-sm rounded hover:bg-gray-600"
+            >
+              Clear Filter
+            </button>
           </div>
-          <button
-            v-if="
-              adminFilterProject || adminFilterMember || adminFilterStatus || adminFilterPriority
-            "
-            @click="clearFilters"
-            class="mt-4 px-4 py-2 bg-gray-700 text-white text-sm rounded hover:bg-gray-600"
-          >
-            Clear Filters
-          </button>
         </div>
       </div>
 
@@ -394,42 +359,15 @@
             <div
               v-for="task in getUpcomingDeadlines()"
               :key="task._id"
-              class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 transition-all"
-              :class="
-                task.priority === 'high'
-                  ? 'border-red-500'
-                  : task.priority === 'low'
-                    ? 'border-yellow-500'
-                    : 'border-blue-500'
-              "
+              class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 border-blue-500 transition-all"
               @click="$router.push('/tasks')"
             >
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2 flex-1">
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    :class="
-                      task.priority === 'high'
-                        ? 'bg-red-500'
-                        : task.priority === 'low'
-                          ? 'bg-yellow-500'
-                          : 'bg-blue-500'
-                    "
-                  ></div>
+                  <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                   <p class="text-white font-medium text-sm">{{ task.name }}</p>
                 </div>
-                <span
-                  class="text-xs px-2 py-1 rounded"
-                  :class="
-                    task.priority === 'high'
-                      ? 'bg-red-600 text-white'
-                      : task.priority === 'low'
-                        ? 'bg-yellow-600 text-white'
-                        : 'bg-blue-600 text-white'
-                  "
-                >
-                  {{ task.priority || 'medium' }}
-                </span>
+                <span class="text-xs px-2 py-1 rounded bg-blue-600 text-white"> Due Soon </span>
               </div>
               <p class="text-xs text-gray-400 flex items-center gap-1">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -559,15 +497,15 @@ var isLoading = ref(false)
 var dashboardData = ref({})
 var currentTime = ref('')
 var currentDate = ref('')
-var adminFilterProject = ref('')
-var adminFilterMember = ref('')
-var adminFilterStatus = ref('')
-var adminFilterPriority = ref('')
+var selectedProjectFilter = ref('')
 
 var timeInterval = null
 
 var isAdmin = computed(() => {
-  return authStore.user?.isAdmin === true
+  if (authStore.user && authStore.user.isAdmin === true) {
+    return true
+  }
+  return false
 })
 
 function getUserName() {
@@ -610,44 +548,156 @@ function updateTime() {
 }
 
 function getAllTasks() {
+  var tasks = []
   if (isAdmin.value) {
     var filtered = getFilteredTasks()
     if (filtered.length > 0) {
-      return filtered
+      tasks = filtered
+    } else {
+      tasks = dashboardData.value.tasks || []
     }
-    return dashboardData.value.tasks || []
+  } else {
+    tasks = dashboardData.value.myTasks || []
   }
-  return dashboardData.value.myTasks || []
+
+  if (selectedProjectFilter.value) {
+    var filteredByProject = []
+    var availableProjectIds = []
+    var projects = getAvailableProjects()
+    for (var i = 0; i < projects.length; i++) {
+      availableProjectIds.push(String(projects[i]._id))
+    }
+
+    for (var j = 0; j < tasks.length; j++) {
+      var task = tasks[j]
+      var taskProjectId = task.projectId
+      if (taskProjectId && taskProjectId._id) {
+        taskProjectId = taskProjectId._id
+      }
+      if (taskProjectId && String(taskProjectId) === String(selectedProjectFilter.value)) {
+        if (availableProjectIds.includes(String(taskProjectId))) {
+          filteredByProject.push(task)
+        }
+      }
+    }
+    return filteredByProject
+  }
+
+  var validTasks = []
+  var availableProjectIds = []
+  var projects = getAvailableProjects()
+  for (var k = 0; k < projects.length; k++) {
+    availableProjectIds.push(String(projects[k]._id))
+  }
+
+  var seenTaskIds = []
+  for (var l = 0; l < tasks.length; l++) {
+    var task = tasks[l]
+    if (!task || !task._id) {
+      continue
+    }
+    var taskId = String(task._id)
+    var alreadySeen = false
+    for (var m = 0; m < seenTaskIds.length; m++) {
+      if (seenTaskIds[m] === taskId) {
+        alreadySeen = true
+        break
+      }
+    }
+    if (alreadySeen) {
+      continue
+    }
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
+    }
+    if (taskProjectId && availableProjectIds.includes(String(taskProjectId))) {
+      seenTaskIds.push(taskId)
+      validTasks.push(task)
+    }
+  }
+
+  return validTasks
 }
 
 function getStats() {
-  if (isAdmin.value) {
-    var tasks = getAllTasks()
-    var completedCount = 0
-    for (var i = 0; i < tasks.length; i++) {
-      if (tasks[i].status === 'completed') {
-        completedCount++
+  var tasks = getAllTasks()
+  var completedCount = 0
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].status === 'completed') {
+      completedCount++
+    }
+  }
+
+  var projects = []
+  if (selectedProjectFilter.value) {
+    var availableProjects = getAvailableProjects()
+    for (var j = 0; j < availableProjects.length; j++) {
+      if (String(availableProjects[j]._id) === String(selectedProjectFilter.value)) {
+        projects.push(availableProjects[j])
+        break
       }
     }
+  } else {
+    projects = getAvailableProjects()
+  }
+
+  if (isAdmin.value) {
+    var applications = []
+    if (selectedProjectFilter.value) {
+      var allApps = dashboardData.value.applications || []
+      for (var k = 0; k < allApps.length; k++) {
+        var appProjectId = allApps[k].projectId
+        if (appProjectId && appProjectId._id) {
+          appProjectId = appProjectId._id
+        }
+        if (appProjectId && String(appProjectId) === String(selectedProjectFilter.value)) {
+          applications.push(allApps[k])
+        }
+      }
+    } else {
+      applications = dashboardData.value.applications || []
+    }
+    var userCount = 0
+    if (!selectedProjectFilter.value) {
+      var allUsers = dashboardData.value.allUsers || []
+      for (var m = 0; m < allUsers.length; m++) {
+        if (!allUsers[m].isAdmin) {
+          userCount++
+        }
+      }
+    } else {
+      userCount = applications.length
+    }
     return {
-      projects: getFilteredProjects().length || dashboardData.value.projects || 0,
+      projects: projects.length,
       tasks: tasks.length,
       completed: completedCount,
-      applications: getFilteredApplications().length || dashboardData.value.users || 0,
+      applications: userCount,
     }
   }
-  var myTasks = dashboardData.value.myTasks || []
-  var myCompletedCount = 0
-  for (var j = 0; j < myTasks.length; j++) {
-    if (myTasks[j].status === 'completed') {
-      myCompletedCount++
+
+  var myApplications = []
+  if (selectedProjectFilter.value) {
+    var allMyApps = dashboardData.value.myApplications || []
+    for (var n = 0; n < allMyApps.length; n++) {
+      var appProjectId = allMyApps[n].projectId
+      if (appProjectId && appProjectId._id) {
+        appProjectId = appProjectId._id
+      }
+      if (appProjectId && String(appProjectId) === String(selectedProjectFilter.value)) {
+        myApplications.push(allMyApps[n])
+      }
     }
+  } else {
+    myApplications = dashboardData.value.myApplications || []
   }
+
   return {
-    projects: dashboardData.value.myProjects?.length || 0,
-    tasks: myTasks.length,
-    completed: myCompletedCount,
-    applications: dashboardData.value.myApplications?.length || 0,
+    projects: projects.length,
+    tasks: tasks.length,
+    completed: completedCount,
+    applications: myApplications.length,
   }
 }
 
@@ -731,29 +781,67 @@ function getRecentTasks() {
 function getUpcomingDeadlines() {
   var today = new Date()
   today.setHours(0, 0, 0, 0)
-  var in7Days = new Date(today)
-  in7Days.setDate(in7Days.getDate() + 7)
 
-  var tasks = getAllTasks()
+  var allTasks = []
+  if (isAdmin.value) {
+    allTasks = dashboardData.value.tasks || []
+  } else {
+    allTasks = dashboardData.value.myTasks || []
+  }
+
+  var availableProjectIds = []
+  var projects = getAvailableProjects()
+  for (var p = 0; p < projects.length; p++) {
+    availableProjectIds.push(String(projects[p]._id))
+  }
+
   var filtered = []
-  for (var i = 0; i < tasks.length; i++) {
-    var task = tasks[i]
-    if (task.deadline && task.status !== 'completed') {
-      var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
-      if (taskDate >= today.getTime() && taskDate <= in7Days.getTime()) {
+  for (var i = 0; i < allTasks.length; i++) {
+    var task = allTasks[i]
+    if (!task || !task.deadline) {
+      continue
+    }
+
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
+    }
+    if (!taskProjectId || !availableProjectIds.includes(String(taskProjectId))) {
+      continue
+    }
+
+    if (task.status === 'completed') {
+      continue
+    }
+
+    try {
+      var taskDate = new Date(task.deadline)
+      if (isNaN(taskDate.getTime())) {
+        continue
+      }
+      taskDate.setHours(0, 0, 0, 0)
+      var todayTime = today.getTime()
+      var taskDateTime = taskDate.getTime()
+      if (taskDateTime >= todayTime) {
         filtered.push(task)
       }
+    } catch (error) {
+      continue
     }
   }
 
   for (var j = 0; j < filtered.length - 1; j++) {
     for (var k = 0; k < filtered.length - j - 1; k++) {
-      var dateA = new Date(filtered[k].deadline)
-      var dateB = new Date(filtered[k + 1].deadline)
-      if (dateA > dateB) {
-        var temp = filtered[k]
-        filtered[k] = filtered[k + 1]
-        filtered[k + 1] = temp
+      try {
+        var dateA = new Date(filtered[k].deadline)
+        var dateB = new Date(filtered[k + 1].deadline)
+        if (dateA > dateB) {
+          var temp = filtered[k]
+          filtered[k] = filtered[k + 1]
+          filtered[k + 1] = temp
+        }
+      } catch (error) {
+        continue
       }
     }
   }
@@ -769,26 +857,76 @@ function getPastTasks() {
   var today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  var tasks = getAllTasks()
+  var allTasks = []
+  if (isAdmin.value) {
+    allTasks = dashboardData.value.tasks || []
+  } else {
+    allTasks = dashboardData.value.myTasks || []
+  }
+
+  var availableProjectIds = []
+  var projects = getAvailableProjects()
+  for (var p = 0; p < projects.length; p++) {
+    availableProjectIds.push(String(projects[p]._id))
+  }
+
+  var seenTaskIds = []
   var filtered = []
-  for (var i = 0; i < tasks.length; i++) {
-    var task = tasks[i]
-    if (task.deadline) {
-      var taskDate = new Date(task.deadline).setHours(0, 0, 0, 0)
-      if (taskDate < today.getTime() || task.status === 'completed') {
+  for (var i = 0; i < allTasks.length; i++) {
+    var task = allTasks[i]
+    if (!task || !task.deadline) {
+      continue
+    }
+
+    var taskId = String(task._id || task._id)
+    var alreadySeen = false
+    for (var s = 0; s < seenTaskIds.length; s++) {
+      if (seenTaskIds[s] === taskId) {
+        alreadySeen = true
+        break
+      }
+    }
+    if (alreadySeen) {
+      continue
+    }
+
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
+    }
+    if (!taskProjectId || !availableProjectIds.includes(String(taskProjectId))) {
+      continue
+    }
+
+    try {
+      var taskDate = new Date(task.deadline)
+      if (isNaN(taskDate.getTime())) {
+        continue
+      }
+      taskDate.setHours(0, 0, 0, 0)
+      var todayTime = today.getTime()
+      var taskDateTime = taskDate.getTime()
+      if (taskDateTime < todayTime) {
+        seenTaskIds.push(taskId)
         filtered.push(task)
       }
+    } catch (error) {
+      continue
     }
   }
 
   for (var j = 0; j < filtered.length - 1; j++) {
     for (var k = 0; k < filtered.length - j - 1; k++) {
-      var dateA = new Date(filtered[k].deadline || filtered[k].updatedAt || 0)
-      var dateB = new Date(filtered[k + 1].deadline || filtered[k + 1].updatedAt || 0)
-      if (dateA < dateB) {
-        var temp = filtered[k]
-        filtered[k] = filtered[k + 1]
-        filtered[k + 1] = temp
+      try {
+        var dateA = new Date(filtered[k].deadline || filtered[k].updatedAt || 0)
+        var dateB = new Date(filtered[k + 1].deadline || filtered[k + 1].updatedAt || 0)
+        if (dateA < dateB) {
+          var temp = filtered[k]
+          filtered[k] = filtered[k + 1]
+          filtered[k + 1] = temp
+        }
+      } catch (error) {
+        continue
       }
     }
   }
@@ -804,8 +942,16 @@ function getProjectName(projectId) {
   var projects = dashboardData.value.allProjects || []
   for (var i = 0; i < projects.length; i++) {
     var project = projects[i]
-    if (project._id === projectId || project._id === projectId?._id) {
-      return project.name || 'Unknown'
+    var projectIdValue = projectId
+    if (projectIdValue && projectIdValue._id) {
+      projectIdValue = projectIdValue._id
+    }
+    if (project._id === projectId || project._id === projectIdValue) {
+      var projectName = project.name
+      if (!projectName) {
+        projectName = 'Unknown'
+      }
+      return projectName
     }
   }
   return 'Unknown'
@@ -813,115 +959,66 @@ function getProjectName(projectId) {
 
 function formatDate(dateString) {
   if (!dateString) return 'N/A'
-  var date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  try {
+    var date
+    if (typeof dateString === 'string') {
+      if (dateString.includes('T')) {
+        date = new Date(dateString)
+      } else {
+        date = new Date(dateString + 'T00:00:00')
+      }
+    } else {
+      date = new Date(dateString)
+    }
+    if (isNaN(date.getTime())) {
+      return 'N/A'
+    }
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch (error) {
+    return 'N/A'
+  }
 }
 
 function getAllProjects() {
   return dashboardData.value.allProjects || []
 }
 
-function getMemberUsers() {
-  var users = dashboardData.value.allUsers || []
-  var result = []
-  for (var i = 0; i < users.length; i++) {
-    if (!users[i].isAdmin) {
-      result.push(users[i])
-    }
+function getAvailableProjects() {
+  if (isAdmin.value) {
+    return dashboardData.value.allProjects || []
   }
-  return result
+  return dashboardData.value.myProjects || []
 }
 
 function getFilteredTasks() {
   if (!isAdmin.value) return []
   var tasks = dashboardData.value.tasks || []
+  if (!selectedProjectFilter.value) {
+    return tasks
+  }
   var result = []
+  var availableProjectIds = []
+  var projects = getAllProjects()
+  for (var p = 0; p < projects.length; p++) {
+    availableProjectIds.push(String(projects[p]._id))
+  }
+
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i]
-    var include = true
-
-    if (adminFilterProject.value) {
-      var taskProjectId = task.projectId?._id || task.projectId
-      if (String(taskProjectId) !== String(adminFilterProject.value)) {
-        include = false
-      }
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
+    }
+    if (!taskProjectId || !availableProjectIds.includes(String(taskProjectId))) {
+      continue
     }
 
-    if (include && adminFilterMember.value) {
-      var taskUserId = task.createdBy?._id || task.createdBy
-      if (String(taskUserId) !== String(adminFilterMember.value)) {
-        include = false
-      }
-    }
-
-    if (include && adminFilterStatus.value && task.status !== adminFilterStatus.value) {
-      include = false
-    }
-
-    if (include && adminFilterPriority.value && task.priority !== adminFilterPriority.value) {
-      include = false
-    }
-
-    if (include) {
+    if (String(taskProjectId) === String(selectedProjectFilter.value)) {
       result.push(task)
-    }
-  }
-  return result
-}
-
-function getFilteredProjects() {
-  if (!isAdmin.value) return []
-  if (!adminFilterProject.value) return getAllProjects()
-  var projects = getAllProjects()
-  var result = []
-  for (var i = 0; i < projects.length; i++) {
-    if (String(projects[i]._id) === String(adminFilterProject.value)) {
-      result.push(projects[i])
-    }
-  }
-  return result
-}
-
-function getFilteredMembers() {
-  if (!isAdmin.value || !adminFilterMember.value) return getMemberUsers()
-  var users = getMemberUsers()
-  var result = []
-  for (var i = 0; i < users.length; i++) {
-    if (String(users[i]._id) === String(adminFilterMember.value)) {
-      result.push(users[i])
-    }
-  }
-  return result
-}
-
-function getFilteredApplications() {
-  if (!isAdmin.value) return []
-  var apps = dashboardData.value.applications || []
-  var result = []
-  for (var i = 0; i < apps.length; i++) {
-    var app = apps[i]
-    var include = true
-
-    if (adminFilterProject.value) {
-      var appProjectId = app.projectId?._id || app.projectId
-      if (String(appProjectId) !== String(adminFilterProject.value)) {
-        include = false
-      }
-    }
-
-    if (include && adminFilterMember.value) {
-      var appUserId = app.createdBy?._id || app.createdBy
-      if (String(appUserId) !== String(adminFilterMember.value)) {
-        include = false
-      }
-    }
-
-    if (include) {
-      result.push(app)
     }
   }
   return result
@@ -929,12 +1026,19 @@ function getFilteredApplications() {
 
 function getPendingApplications() {
   if (!isAdmin.value) return []
-  var filtered = getFilteredApplications()
-  var apps = []
-  if (filtered.length > 0) {
+  var apps = dashboardData.value.applications || []
+  if (selectedProjectFilter.value) {
+    var filtered = []
+    for (var f = 0; f < apps.length; f++) {
+      var appProjectId = apps[f].projectId
+      if (appProjectId && appProjectId._id) {
+        appProjectId = appProjectId._id
+      }
+      if (appProjectId && String(appProjectId) === String(selectedProjectFilter.value)) {
+        filtered.push(apps[f])
+      }
+    }
     apps = filtered
-  } else {
-    apps = dashboardData.value.applications || []
   }
   var result = []
   for (var i = 0; i < apps.length; i++) {
@@ -947,10 +1051,7 @@ function getPendingApplications() {
 }
 
 function clearFilters() {
-  adminFilterProject.value = ''
-  adminFilterMember.value = ''
-  adminFilterStatus.value = ''
-  adminFilterPriority.value = ''
+  selectedProjectFilter.value = ''
 }
 
 async function loadData() {
@@ -989,21 +1090,32 @@ async function loadData() {
     } else {
       var dashboardResponse = await backend.get('/api/users/dashboard')
       var data = dashboardResponse.data
-      var userId = authStore.user?._id
-      var tasksResponse = await backend.get('/api/tasks')
-      var allUserTasks = []
-      var allTasks = tasksResponse.data || []
-      for (var k = 0; k < allTasks.length; k++) {
-        var task = allTasks[k]
-        var taskUserId = task.createdBy?._id || task.createdBy
-        if (String(taskUserId) === String(userId)) {
-          allUserTasks.push(task)
+
+      var myTasksResponse = await backend.get('/api/tasks/my')
+      var myTasksData = myTasksResponse.data || []
+
+      var combinedTasks = []
+      var taskIds = []
+
+      for (var n = 0; n < myTasksData.length; n++) {
+        var task = myTasksData[n]
+        var taskId = String(task._id)
+        var found = false
+        for (var p = 0; p < taskIds.length; p++) {
+          if (taskIds[p] === taskId) {
+            found = true
+            break
+          }
+        }
+        if (!found) {
+          taskIds.push(taskId)
+          combinedTasks.push(task)
         }
       }
 
       dashboardData.value = {
         myProjects: data.myProjects || [],
-        myTasks: allUserTasks,
+        myTasks: combinedTasks,
         myApplications: data.myApplications || [],
       }
     }

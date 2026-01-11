@@ -107,10 +107,6 @@
               <span class="font-medium">Created by:</span>
               {{ selectedEvent.createdBy?.name || selectedEvent.createdBy?.email || 'Unknown' }}
             </p>
-            <p v-if="selectedEvent.projectId" class="text-gray-300">
-              <span class="font-medium">Project:</span>
-              {{ selectedEvent.projectId?.name || 'Unknown' }}
-            </p>
             <div
               v-if="
                 isAdmin ||
@@ -170,19 +166,6 @@
               ></textarea>
             </div>
 
-            <div v-if="isAdmin">
-              <label class="block text-sm text-gray-300 mb-1">Project (optional)</label>
-              <select
-                v-model="eventForm.projectId"
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">All projects</option>
-                <option v-for="project in myProjects" :key="project._id" :value="project._id">
-                  {{ project.name }}
-                </option>
-              </select>
-            </div>
-
             <div v-if="errorMessage" class="text-red-400 text-sm">{{ errorMessage }}</div>
 
             <button
@@ -223,12 +206,12 @@ var eventForm = reactive({
   title: '',
   date: '',
   description: '',
-  projectId: '',
   taskId: '',
 })
 
 var isAdmin = computed(() => {
-  return authStore.user?.isAdmin === true
+  if (!authStore.user) return false
+  return authStore.user.isAdmin === true
 })
 
 var currentDate = ref(new Date())
@@ -283,12 +266,16 @@ var calendarDays = computed(() => {
 })
 
 function getEventsForDay(date) {
-  return events.value.filter((e) => {
+  var result = []
+  for (var i = 0; i < events.value.length; i++) {
+    var e = events.value[i]
     if (typeof e.date === 'string') {
-      return e.date.split('T')[0] === date
+      if (e.date.split('T')[0] === date) {
+        result.push(e)
+      }
     }
-    return false
-  })
+  }
+  return result
 }
 
 function formatDate(dateString) {
@@ -351,13 +338,11 @@ async function addEvent() {
       title: eventForm.title,
       date: eventDate,
       description: eventForm.description,
-      projectId: eventForm.projectId || null,
       taskId: eventForm.taskId || null,
     })
     eventForm.title = ''
     eventForm.date = ''
     eventForm.description = ''
-    eventForm.projectId = ''
     eventForm.taskId = ''
     showAddEventForm.value = false
     await loadEvents()
@@ -369,7 +354,10 @@ async function addEvent() {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error adding event'
+    var errorMsg = 'Error adding event'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -400,7 +388,10 @@ async function deleteEvent(eventId) {
           })
         }
       } catch (error) {
-        var errorMsg = error.response?.data?.msg || 'Error removing event'
+        var errorMsg = 'Error removing event'
+        if (error && error.response && error.response.data && error.response.data.msg) {
+          errorMsg = error.response.data.msg
+        }
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

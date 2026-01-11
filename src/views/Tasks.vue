@@ -77,7 +77,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Pending ({{ getPendingApplications().length }})
+              Pending ({{ getApplicationsByStatus('pending').length }})
             </button>
             <button
               @click="activeApplicationTab = 'approved'"
@@ -88,7 +88,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Approved ({{ getApprovedApplications().length }})
+              Approved ({{ getApplicationsByStatus('approved').length }})
             </button>
             <button
               @click="activeApplicationTab = 'rejected'"
@@ -99,20 +99,20 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Rejected ({{ getRejectedApplications().length }})
+              Rejected ({{ getApplicationsByStatus('rejected').length }})
             </button>
           </div>
 
           <div v-if="activeApplicationTab === 'pending'">
             <div
-              v-if="getPendingApplications().length === 0"
+              v-if="getApplicationsByStatus('pending').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No pending applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getPendingApplications()"
+                v-for="app in getApplicationsByStatus('pending')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
               >
@@ -128,14 +128,14 @@
 
           <div v-if="activeApplicationTab === 'approved'">
             <div
-              v-if="getApprovedApplications().length === 0"
+              v-if="getApplicationsByStatus('approved').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No approved applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getApprovedApplications()"
+                v-for="app in getApplicationsByStatus('approved')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
               >
@@ -151,14 +151,14 @@
 
           <div v-if="activeApplicationTab === 'rejected'">
             <div
-              v-if="getRejectedApplications().length === 0"
+              v-if="getApplicationsByStatus('rejected').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No rejected applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getRejectedApplications()"
+                v-for="app in getApplicationsByStatus('rejected')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
               >
@@ -174,7 +174,7 @@
         </div>
 
         <div
-          v-if="getApprovedApplications().length > 0"
+          v-if="getApplicationsByStatus('approved').length > 0"
           class="bg-gray-800 rounded-lg shadow-lg p-6"
         >
           <h2 class="text-xl font-semibold text-white mb-4">My Tasks</h2>
@@ -249,14 +249,6 @@
                         placeholder="Deadline (optional)"
                         class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                       />
-                      <select
-                        v-model="newTaskForm.priority"
-                        class="px-3 py-1 bg-gray-700 border border-gray-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
                     </div>
                     <textarea
                       v-model="newTaskForm.description"
@@ -310,9 +302,6 @@
                       <th class="px-6 py-4 text-left text-base font-medium text-gray-300">
                         Description
                       </th>
-                      <th class="px-6 py-4 text-center text-base font-medium text-gray-300">
-                        Priority
-                      </th>
                       <th class="px-6 py-4 text-left text-base font-medium text-gray-300">
                         Deadline
                       </th>
@@ -350,20 +339,6 @@
                       </td>
                       <td class="px-6 py-4 text-gray-300 text-base align-middle">
                         {{ task.description || '-' }}
-                      </td>
-                      <td class="px-6 py-4 text-center align-middle">
-                        <span
-                          :class="
-                            task.priority === 'high'
-                              ? 'bg-red-600 text-white'
-                              : task.priority === 'medium'
-                                ? 'bg-yellow-600 text-white'
-                                : 'bg-green-600 text-white'
-                          "
-                          class="px-3 py-1 text-xs rounded font-medium"
-                        >
-                          {{ task.priority || 'medium' }}
-                        </span>
                       </td>
                       <td class="px-6 py-4 text-gray-300 text-base align-middle">
                         {{ formatDeadline(task.deadline) }}
@@ -441,14 +416,6 @@
             class="w-full px-3 py-2 bg-gray-600 text-white rounded"
           ></textarea>
           <div class="flex gap-2">
-            <select
-              v-model="adminTaskForm.priority"
-              class="px-3 py-2 bg-gray-600 text-white rounded"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
             <input
               v-model="adminTaskForm.deadline"
               type="date"
@@ -465,7 +432,7 @@
         </form>
 
         <div class="mb-6 bg-gray-700 rounded-lg p-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label class="block text-sm text-gray-400 mb-2">Filter by Project</label>
               <select
@@ -485,11 +452,7 @@
                 class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">All Members</option>
-                <option
-                  v-for="user in allUsers.filter((u) => !u.isAdmin)"
-                  :key="user._id"
-                  :value="user._id"
-                >
+                <option v-for="user in getNonAdminUsers()" :key="user._id" :value="user._id">
                   {{ user.name }} {{ user.lastname }}
                 </option>
               </select>
@@ -506,26 +469,9 @@
                 <option value="completed">Completed</option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm text-gray-400 mb-2">Filter by Priority</label>
-              <select
-                v-model="adminSelectedPriorityFilter"
-                class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">All Priority</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
           </div>
           <button
-            v-if="
-              adminSelectedProjectId ||
-              adminSelectedUserId ||
-              adminSelectedStatusFilter ||
-              adminSelectedPriorityFilter
-            "
+            v-if="adminSelectedProjectId || adminSelectedUserId || adminSelectedStatusFilter"
             @click="clearAdminFilters"
             class="px-4 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-500"
           >
@@ -552,7 +498,6 @@
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Project</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">User</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Description</th>
-                <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Priority</th>
                 <th class="px-6 py-4 text-left text-base font-medium text-gray-300">Deadline</th>
                 <th class="px-6 py-4 text-center text-base font-medium text-gray-300">Actions</th>
               </tr>
@@ -615,24 +560,6 @@
                   style="cursor: pointer"
                 >
                   {{ task.description || '-' }}
-                </td>
-                <td
-                  class="px-6 py-4 text-center align-middle"
-                  @click="toggleTaskPopup(task)"
-                  style="cursor: pointer"
-                >
-                  <span
-                    :class="
-                      task.priority === 'high'
-                        ? 'bg-red-600 text-white'
-                        : task.priority === 'medium'
-                          ? 'bg-yellow-600 text-white'
-                          : 'bg-green-600 text-white'
-                    "
-                    class="px-3 py-1 text-xs rounded font-medium"
-                  >
-                    {{ task.priority || 'medium' }}
-                  </span>
                 </td>
                 <td
                   class="px-6 py-4 text-gray-300 text-base align-middle"
@@ -706,24 +633,6 @@
               </p>
             </div>
 
-            <div>
-              <label class="text-gray-400 text-sm">Priority</label>
-              <p class="mt-1">
-                <span
-                  :class="
-                    selectedTask.priority === 'high'
-                      ? 'bg-red-600 text-white'
-                      : selectedTask.priority === 'medium'
-                        ? 'bg-yellow-600 text-white'
-                        : 'bg-green-600 text-white'
-                  "
-                  class="px-3 py-1 text-sm rounded font-medium"
-                >
-                  {{ selectedTask.priority || 'medium' }}
-                </span>
-              </p>
-            </div>
-
             <div v-if="selectedTask.deadline">
               <label class="text-gray-400 text-sm">Deadline</label>
               <p class="text-white mt-1">
@@ -760,7 +669,6 @@
     </div>
     <Alert ref="alertRef" />
     <ConfirmDialog ref="confirmDialogRef" />
-    <Alert ref="alertRef" />
   </Layout>
 </template>
 
@@ -788,10 +696,9 @@ var allApplications = ref([])
 var showApplicationForm = ref(false)
 var showAdminTaskForm = ref(false)
 var activeApplicationTab = ref('pending')
-var adminSelectedUserId = ref('')
 var adminSelectedProjectId = ref('')
+var adminSelectedUserId = ref('')
 var adminSelectedStatusFilter = ref('')
-var adminSelectedPriorityFilter = ref('')
 var allUsers = ref([])
 var selectedProjectFilter = ref('')
 var selectedStatusFilter = ref('')
@@ -808,61 +715,50 @@ var newTaskForm = reactive({
   name: '',
   description: '',
   deadline: '',
-  priority: 'medium',
 })
 
 var adminTaskForm = reactive({
   projectId: '',
   name: '',
   description: '',
-  priority: 'medium',
   deadline: '',
 })
 
 var isAdmin = computed(() => {
-  return authStore.user?.isAdmin === true
+  if (!authStore.user) return false
+  return authStore.user.isAdmin === true
 })
 
 function isTaskCreatedByAdmin(task) {
   if (!isAdmin.value) return false
-  var adminId = authStore.user?._id
+  var adminId = authStore.user ? authStore.user._id : null
   var taskCreatorId = task.createdBy?._id || task.createdBy
   return String(adminId) === String(taskCreatorId)
 }
 
 function isTaskCreatedByUser(task) {
-  var userId = authStore.user?._id
+  var userId = authStore.user ? authStore.user._id : null
   var taskCreatorId = task.createdBy?._id || task.createdBy
   return String(userId) === String(taskCreatorId)
+}
+
+function getNonAdminUsers() {
+  var result = []
+  for (var i = 0; i < allUsers.value.length; i++) {
+    if (!allUsers.value[i].isAdmin) {
+      result.push(allUsers.value[i])
+    }
+  }
+  return result
 }
 
 var myProjects = ref([])
 var myApplications = ref([])
 
-function getPendingApplications() {
+function getApplicationsByStatus(status) {
   var result = []
   for (var i = 0; i < myApplications.value.length; i++) {
-    if (myApplications.value[i].status === 'pending') {
-      result.push(myApplications.value[i])
-    }
-  }
-  return result
-}
-
-function getApprovedApplications() {
-  var result = []
-  for (var i = 0; i < myApplications.value.length; i++) {
-    if (myApplications.value[i].status === 'approved') {
-      result.push(myApplications.value[i])
-    }
-  }
-  return result
-}
-
-function getRejectedApplications() {
-  var result = []
-  for (var i = 0; i < myApplications.value.length; i++) {
-    if (myApplications.value[i].status === 'rejected') {
+    if (myApplications.value[i].status === status) {
       result.push(myApplications.value[i])
     }
   }
@@ -875,7 +771,6 @@ function toggleTaskForm(applicationId) {
   newTaskForm.name = ''
   newTaskForm.description = ''
   newTaskForm.deadline = ''
-  newTaskForm.priority = 'medium'
 }
 
 function toggleTaskPopup(task) {
@@ -884,7 +779,7 @@ function toggleTaskPopup(task) {
 }
 
 function getFilteredApplications() {
-  var approved = getApprovedApplications()
+  var approved = getApplicationsByStatus('approved')
 
   if (!selectedProjectFilter.value) {
     return approved
@@ -893,7 +788,10 @@ function getFilteredApplications() {
   var result = []
   for (var i = 0; i < approved.length; i++) {
     var app = approved[i]
-    var projectId = app.projectId?._id || app.projectId
+    var projectId = app.projectId
+    if (projectId && projectId._id) {
+      projectId = projectId._id
+    }
     if (String(projectId) === String(selectedProjectFilter.value)) {
       result.push(app)
     }
@@ -902,15 +800,24 @@ function getFilteredApplications() {
 }
 
 function getFilteredTasksForApp(app) {
-  var appProjectId = app.projectId?._id || app.projectId
+  var appProjectId = app.projectId
+  if (appProjectId && appProjectId._id) {
+    appProjectId = appProjectId._id
+  }
   var appId = app._id
   var result = []
 
   for (var i = 0; i < allTasks.value.length; i++) {
     var task = allTasks.value[i]
 
-    var taskProjectId = task.projectId?._id || task.projectId
-    var taskApplicationId = task.applicationId?._id || task.applicationId
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
+    }
+    var taskApplicationId = task.applicationId
+    if (taskApplicationId && taskApplicationId._id) {
+      taskApplicationId = taskApplicationId._id
+    }
 
     if (String(taskProjectId) === String(appProjectId)) {
       if (String(taskApplicationId) === String(appId)) {
@@ -935,8 +842,14 @@ function getFilteredTasksForApp(app) {
     var search = taskSearchQuery.value.toLowerCase()
     var filteredBySearch = []
     for (var k = 0; k < result.length; k++) {
-      var taskName = (result[k].name || '').toLowerCase()
-      var taskDesc = (result[k].description || '').toLowerCase()
+      var taskName = ''
+      if (result[k].name) {
+        taskName = result[k].name.toLowerCase()
+      }
+      var taskDesc = ''
+      if (result[k].description) {
+        taskDesc = result[k].description.toLowerCase()
+      }
       if (taskName.includes(search) || taskDesc.includes(search)) {
         filteredBySearch.push(result[k])
       }
@@ -963,46 +876,13 @@ async function loadCalendarEvents() {
 async function loadTasks() {
   isLoadingTasks.value = true
   try {
-    var allTasksResponse = await backend.get('/api/tasks')
-    var allTasksData = allTasksResponse.data || []
-
-    var myTasksResponse = await backend.get('/api/tasks/my')
-    var myTasksData = myTasksResponse.data || []
-
-    var combinedTasks = []
-    var taskIds = []
-
-    for (var i = 0; i < allTasksData.length; i++) {
-      var taskId = allTasksData[i]._id
-      var found = false
-      for (var k = 0; k < taskIds.length; k++) {
-        if (taskIds[k] === taskId) {
-          found = true
-          break
-        }
-      }
-      if (!found) {
-        taskIds.push(taskId)
-        combinedTasks.push(allTasksData[i])
-      }
+    if (isAdmin.value) {
+      var allTasksResponse = await backend.get('/api/tasks')
+      allTasks.value = allTasksResponse.data || []
+    } else {
+      var myTasksResponse = await backend.get('/api/tasks/my')
+      allTasks.value = myTasksResponse.data || []
     }
-
-    for (var j = 0; j < myTasksData.length; j++) {
-      var taskId = myTasksData[j]._id
-      var found = false
-      for (var l = 0; l < taskIds.length; l++) {
-        if (taskIds[l] === taskId) {
-          found = true
-          break
-        }
-      }
-      if (!found) {
-        taskIds.push(taskId)
-        combinedTasks.push(myTasksData[j])
-      }
-    }
-
-    allTasks.value = combinedTasks
   } catch (error) {
     errorMessage.value = 'Error loading tasks'
     console.error(error)
@@ -1019,51 +899,41 @@ function formatDeadline(deadline) {
   return date.toISOString().split('T')[0]
 }
 
-var displayedAdminTasks = ref([])
-
-async function loadAdminTasks() {
-  isLoadingTasks.value = true
-  try {
-    var response = await backend.get('/api/tasks')
-    var allTasksData = response.data || []
-
-    displayedAdminTasks.value = allTasksData
-  } catch (error) {
-    errorMessage.value = 'Error loading tasks'
-    console.error(error)
-  }
-  isLoadingTasks.value = false
-}
-
 function getFilteredAdminTasks() {
   var result = []
 
-  for (var i = 0; i < displayedAdminTasks.value.length; i++) {
-    result.push(displayedAdminTasks.value[i])
-  }
-
-  if (adminSelectedUserId.value) {
-    var filteredByUser = []
-    for (var j = 0; j < result.length; j++) {
-      var task = result[j]
-      var taskUserId = task.createdBy?._id || task.createdBy
-      if (String(taskUserId) === String(adminSelectedUserId.value)) {
-        filteredByUser.push(task)
-      }
-    }
-    result = filteredByUser
+  for (var i = 0; i < allTasks.value.length; i++) {
+    result.push(allTasks.value[i])
   }
 
   if (adminSelectedProjectId.value) {
     var filteredByProject = []
     for (var k = 0; k < result.length; k++) {
       var task = result[k]
-      var taskProjectId = task.projectId?._id || task.projectId
+      var taskProjectId = task.projectId
+      if (taskProjectId && taskProjectId._id) {
+        taskProjectId = taskProjectId._id
+      }
       if (String(taskProjectId) === String(adminSelectedProjectId.value)) {
         filteredByProject.push(task)
       }
     }
     result = filteredByProject
+  }
+
+  if (adminSelectedUserId.value) {
+    var filteredByUser = []
+    for (var j = 0; j < result.length; j++) {
+      var task = result[j]
+      var taskUserId = task.createdBy
+      if (taskUserId && taskUserId._id) {
+        taskUserId = taskUserId._id
+      }
+      if (String(taskUserId) === String(adminSelectedUserId.value)) {
+        filteredByUser.push(task)
+      }
+    }
+    result = filteredByUser
   }
 
   if (adminSelectedStatusFilter.value) {
@@ -1076,22 +946,18 @@ function getFilteredAdminTasks() {
     result = filteredByStatus
   }
 
-  if (adminSelectedPriorityFilter.value) {
-    var filteredByPriority = []
-    for (var m = 0; m < result.length; m++) {
-      if (result[m].priority === adminSelectedPriorityFilter.value) {
-        filteredByPriority.push(result[m])
-      }
-    }
-    result = filteredByPriority
-  }
-
   if (taskSearchQuery.value) {
     var search = taskSearchQuery.value.toLowerCase()
     var filteredBySearch = []
     for (var n = 0; n < result.length; n++) {
-      var taskName = (result[n].name || '').toLowerCase()
-      var taskDesc = (result[n].description || '').toLowerCase()
+      var taskName = ''
+      if (result[n].name) {
+        taskName = result[n].name.toLowerCase()
+      }
+      var taskDesc = ''
+      if (result[n].description) {
+        taskDesc = result[n].description.toLowerCase()
+      }
       if (taskName.includes(search) || taskDesc.includes(search)) {
         filteredBySearch.push(result[n])
       }
@@ -1106,7 +972,6 @@ function clearAdminFilters() {
   adminSelectedProjectId.value = ''
   adminSelectedUserId.value = ''
   adminSelectedStatusFilter.value = ''
-  adminSelectedPriorityFilter.value = ''
 }
 
 function clearMemberFilters() {
@@ -1163,7 +1028,10 @@ async function submitApplication() {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error submitting application'
+    var errorMsg = 'Error submitting application'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -1183,7 +1051,6 @@ async function createTask(app) {
       description: newTaskForm.description,
       status: 'in-progress',
       deadline: newTaskForm.deadline || null,
-      priority: newTaskForm.priority || 'medium',
     })
     var createdTask = response.data
 
@@ -1201,7 +1068,6 @@ async function createTask(app) {
     newTaskForm.name = ''
     newTaskForm.description = ''
     newTaskForm.deadline = ''
-    newTaskForm.priority = 'medium'
     openTaskFormForApplicationId.value = ''
     if (alertRef.value) {
       alertRef.value.show('success', 'Task created successfully!', {
@@ -1211,7 +1077,10 @@ async function createTask(app) {
     }
     await loadTasks()
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error creating task'
+    var errorMsg = 'Error creating task'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -1228,7 +1097,6 @@ async function createAdminTask() {
       projectId: adminTaskForm.projectId,
       name: adminTaskForm.name,
       description: adminTaskForm.description,
-      priority: adminTaskForm.priority,
       deadline: adminTaskForm.deadline || null,
       status: 'not-started',
     })
@@ -1236,11 +1104,10 @@ async function createAdminTask() {
       projectId: '',
       name: '',
       description: '',
-      priority: 'medium',
       deadline: '',
     })
     showAdminTaskForm.value = false
-    await loadAdminTasks()
+    await loadTasks()
     if (alertRef.value) {
       alertRef.value.show('success', 'Task created successfully!', {
         autoClose: true,
@@ -1248,7 +1115,10 @@ async function createAdminTask() {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error creating task'
+    var errorMsg = 'Error creating task'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -1273,7 +1143,10 @@ async function updateTaskStatus(taskId, newStatus) {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error updating task'
+    var errorMsg = 'Error updating task'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -1299,7 +1172,7 @@ async function deleteTask(taskId) {
           selectedTask.value = null
         }
         if (isAdmin.value) {
-          await loadAdminTasks()
+          await loadTasks()
         } else {
           await loadTasks()
         }
@@ -1310,7 +1183,10 @@ async function deleteTask(taskId) {
           })
         }
       } catch (error) {
-        var errorMsg = error.response?.data?.msg || 'Error deleting task'
+        var errorMsg = 'Error deleting task'
+        if (error && error.response && error.response.data && error.response.data.msg) {
+          errorMsg = error.response.data.msg
+        }
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {
@@ -1326,7 +1202,7 @@ onMounted(async () => {
   await loadAllData()
   await loadCalendarEvents()
   if (isAdmin.value) {
-    await loadAdminTasks()
+    await loadTasks()
   } else {
     await loadTasks()
     if (myProjects.value.length > 0 && !selectedProjectFilter.value) {

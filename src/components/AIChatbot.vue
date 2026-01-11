@@ -86,16 +86,16 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 
-const authStore = useAuthStore()
-const isOpen = ref(false)
-const input = ref('')
-const messages = ref([])
-const isLoading = ref(false)
+var authStore = useAuthStore()
+var isOpen = ref(false)
+var input = ref('')
+var messages = ref([])
+var isLoading = ref(false)
 
 async function handleSubmit() {
   if (!input.value.trim() || isLoading.value) return
 
-  const userMessage = input.value.trim()
+  var userMessage = input.value.trim()
   input.value = ''
 
   messages.value.push({
@@ -111,7 +111,7 @@ async function handleSubmit() {
     var userTasks = []
     var userApplications = []
 
-    if (authStore.user?.isAdmin) {
+    if (authStore.user && authStore.user.isAdmin) {
       var projectsRes = await backend.get('/api/projects')
       userProjects = projectsRes.data || []
 
@@ -131,7 +131,7 @@ async function handleSubmit() {
     }
 
     var context = {
-      userId: authStore.user?._id,
+      userId: authStore.user ? authStore.user._id : null,
       projects: userProjects,
       tasks: userTasks,
       applications: userApplications,
@@ -167,11 +167,10 @@ async function handleSubmit() {
       content: responseMessage,
     })
   } catch (error) {
-    const errorMessage =
-      error?.response?.data?.msg ||
-      error?.response?.data?.error ||
-      error?.message ||
-      'Sorry, I encountered an error. Please try again.'
+    var errorMessage = 'Sorry, I encountered an error. Please try again.'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMessage = error.response.data.msg
+    }
     messages.value.push({
       id: Date.now() + 1,
       role: 'assistant',

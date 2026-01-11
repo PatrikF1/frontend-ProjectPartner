@@ -81,11 +81,11 @@ import { useAuthStore } from '@/stores/auth'
 import Alert from '@/components/Alert.vue'
 import logo from '@/assets/pp_logo.png'
 
-const router = useRouter()
-const authStore = useAuthStore()
-const alertRef = ref(null)
+var router = useRouter()
+var authStore = useAuthStore()
+var alertRef = ref(null)
 
-const form = reactive({
+var form = reactive({
   email: '',
   password: '',
 })
@@ -93,26 +93,37 @@ const form = reactive({
 async function onSubmit() {
   authStore.setLoading(true)
   try {
-    const payload = {
-      email: form.email.trim().toLowerCase(),
+    var emailValue = form.email.trim()
+    emailValue = emailValue.toLowerCase()
+    var payload = {
+      email: emailValue,
       password: form.password,
     }
 
-    const response = await authStore.login(payload)
+    var response = await authStore.login(payload)
 
     authStore.setUser(response)
     authStore.setToken(response.token)
 
-    alertRef.value.show('success', 'Successfully signed in! Redirecting...', {
-      autoClose: true,
-      duration: 2000,
-    })
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Successfully signed in! Redirecting...', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
 
-    setTimeout(() => router.push('/dashboard'), 200)
-  } catch (e) {
-    const errorMessage = e?.response?.data?.msg || 'Error logging in'
-    alertRef.value.show('error', errorMessage)
-    console.error(e)
+    setTimeout(function () {
+      router.push('/dashboard')
+    }, 200)
+  } catch (error) {
+    var errorMessage = 'Error logging in'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMessage = error.response.data.msg
+    }
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMessage)
+    }
+    console.error(error)
   } finally {
     authStore.setLoading(false)
   }

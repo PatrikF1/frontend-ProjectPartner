@@ -30,28 +30,6 @@
             placeholder="Description"
           ></textarea>
 
-          <select
-            v-model="form.type"
-            required
-            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select type</option>
-            <option value="project">Project</option>
-            <option value="feature">Feature</option>
-            <option value="bug/fix">Bug/Fix</option>
-            <option value="task">Task</option>
-            <option value="application">Application</option>
-            <option value="other">Other</option>
-          </select>
-
-          <input
-            v-model="form.capacity"
-            type="number"
-            min="1"
-            class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Capacity (optional)"
-          />
-
           <Alert ref="alertRef" />
 
           <button
@@ -68,102 +46,15 @@
         <h2 class="text-xl font-semibold text-white mb-4">Available Projects</h2>
         <p class="text-gray-300 mb-6">Browse available projects.</p>
 
-        <div class="mb-6">
-          <label class="block text-sm text-gray-300 mb-2">Filter by:</label>
-          <select
-            v-model="filterType"
-            class="w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="all">All Projects</option>
-            <option value="admin">By Admin</option>
-            <option value="type">By Type</option>
-            <option value="project">By Project</option>
-          </select>
-
-          <select
-            v-if="filterType === 'admin'"
-            v-model="selectedAdminId"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select admin...</option>
-            <option
-              v-for="admin in projects
-                .map((p) => p.createdBy)
-                .filter((admin, index, self) => {
-                  var adminId = admin?._id || admin
-                  return self.findIndex((a) => (a?._id || a) === adminId) === index
-                })"
-              :key="admin?._id || admin"
-              :value="admin?._id || admin"
-            >
-              {{ admin?.name || admin?.email || 'Unknown' }}
-            </option>
-          </select>
-
-          <select
-            v-if="filterType === 'type'"
-            v-model="selectedType"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select type...</option>
-            <option value="project">Project</option>
-            <option value="feature">Feature</option>
-            <option value="bug/fix">Bug/Fix</option>
-            <option value="task">Task</option>
-            <option value="application">Application</option>
-            <option value="other">Other</option>
-          </select>
-
-          <select
-            v-if="filterType === 'project'"
-            v-model="selectedProjectId"
-            class="mt-3 w-full md:w-auto px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select project...</option>
-            <option v-for="project in projects" :key="project._id" :value="project._id">
-              {{ project.name }}
-            </option>
-          </select>
-        </div>
-
         <div v-if="loading" class="text-center text-gray-400">Loading projects...</div>
 
-        <div
-          v-else-if="
-            projects.filter((p) => {
-              if (filterType === 'all') return true
-              if (filterType === 'admin' && selectedAdminId) {
-                return String(p.createdBy?._id || p.createdBy) === String(selectedAdminId)
-              }
-              if (filterType === 'type' && selectedType) {
-                return p.type === selectedType
-              }
-              if (filterType === 'project' && selectedProjectId) {
-                return String(p._id) === String(selectedProjectId)
-              }
-              return true
-            }).length === 0
-          "
-          class="text-center text-gray-400"
-        >
+        <div v-else-if="projects.length === 0" class="text-center text-gray-400">
           No projects found.
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
-            v-for="project in projects.filter((p) => {
-              if (filterType === 'all') return true
-              if (filterType === 'admin' && selectedAdminId) {
-                return String(p.createdBy?._id || p.createdBy) === String(selectedAdminId)
-              }
-              if (filterType === 'type' && selectedType) {
-                return p.type === selectedType
-              }
-              if (filterType === 'project' && selectedProjectId) {
-                return String(p._id) === String(selectedProjectId)
-              }
-              return true
-            })"
+            v-for="project in projects"
             :key="project._id"
             class="bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500"
           >
@@ -204,41 +95,22 @@
             <p class="text-gray-300 text-sm mb-3">{{ project.description }}</p>
 
             <div class="flex items-center space-x-4 text-sm text-gray-400 mb-3">
-              <span
-                class="px-2 py-1 rounded text-xs font-medium"
-                :class="{
-                  'bg-blue-500/20 text-blue-400': project.type === 'project',
-                  'bg-green-500/20 text-green-400': project.type === 'feature',
-                  'bg-red-500/20 text-red-400': project.type === 'bug/fix',
-                  'bg-purple-500/20 text-purple-400': project.type === 'task',
-                  'bg-yellow-500/20 text-yellow-400': project.type === 'application',
-                  'bg-gray-500/20 text-gray-400': project.type === 'other' || !project.type,
-                }"
-              >
-                {{ project.type || 'Other' }}
+              <span class="text-blue-400">
+                Members: {{ getUniqueMembers(project.members || []).length }}
               </span>
-              <span v-if="project.capacity" class="text-green-400">
-                Capacity: {{ project.capacity }}
-              </span>
-              <span class="text-blue-400"> Members: {{ project.members?.length || 0 }} </span>
             </div>
 
-            <div v-if="isAdmin && project.members?.length > 0" class="mb-3">
+            <div v-if="isAdmin && getUniqueMembers(project.members || []).length > 0" class="mb-3">
               <p class="text-gray-300 text-xs font-semibold mb-1">Members:</p>
               <div class="space-y-0.5">
                 <div
-                  v-for="member in project.members"
-                  :key="member._id"
+                  v-for="member in getUniqueMembers(project.members || [])"
+                  :key="member._id || member"
                   class="text-gray-400 text-xs"
                 >
-                  {{ member.email }}
+                  {{ typeof member === 'object' ? member.email : member }}
                 </div>
               </div>
-            </div>
-
-            <div class="text-xs text-gray-500">
-              Created: {{ new Date(project.createdAt).toLocaleDateString() }} by
-              {{ getName(project.createdBy) }}
             </div>
           </div>
         </div>
@@ -265,26 +137,6 @@
               required
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             ></textarea>
-
-            <select
-              v-model="editingProject.type"
-              required
-              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="project">Project</option>
-              <option value="feature">Feature</option>
-              <option value="bug/fix">Bug/Fix</option>
-              <option value="task">Task</option>
-              <option value="application">Application</option>
-              <option value="other">Other</option>
-            </select>
-
-            <input
-              v-model="editingProject.capacity"
-              type="number"
-              min="1"
-              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
 
             <div class="flex space-x-2">
               <button
@@ -323,7 +175,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Pending ({{ getPendingApplications().length }})
+              Pending ({{ getApplicationsByStatus('pending').length }})
             </button>
             <button
               @click="activeTab = 'approved'"
@@ -334,7 +186,7 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Approved ({{ getApprovedApplications().length }})
+              Approved ({{ getApplicationsByStatus('approved').length }})
             </button>
             <button
               @click="activeTab = 'rejected'"
@@ -345,20 +197,20 @@
                   : 'text-gray-400 hover:text-white',
               ]"
             >
-              Rejected ({{ getRejectedApplications().length }})
+              Rejected ({{ getApplicationsByStatus('rejected').length }})
             </button>
           </div>
 
           <div v-if="activeTab === 'pending'">
             <div
-              v-if="getPendingApplications().length === 0"
+              v-if="getApplicationsByStatus('pending').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No pending applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getPendingApplications()"
+                v-for="app in getApplicationsByStatus('pending')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-yellow-500"
               >
@@ -397,14 +249,14 @@
 
           <div v-if="activeTab === 'approved'">
             <div
-              v-if="getApprovedApplications().length === 0"
+              v-if="getApplicationsByStatus('approved').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No approved applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getApprovedApplications()"
+                v-for="app in getApplicationsByStatus('approved')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-green-500"
               >
@@ -427,14 +279,14 @@
 
           <div v-if="activeTab === 'rejected'">
             <div
-              v-if="getRejectedApplications().length === 0"
+              v-if="getApplicationsByStatus('rejected').length === 0"
               class="text-center text-gray-400 text-sm py-8"
             >
               No rejected applications.
             </div>
             <div v-else class="space-y-3">
               <div
-                v-for="app in getRejectedApplications()"
+                v-for="app in getApplicationsByStatus('rejected')"
                 :key="app._id"
                 class="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500"
               >
@@ -479,62 +331,59 @@ var applications = ref([])
 var loading = ref(false)
 var loadingApplications = ref(false)
 var error = ref(null)
-var selectedProjectId = ref('')
 var editingProject = ref(null)
 var showCreateForm = ref(false)
 var activeTab = ref('pending')
-var filterType = ref('all')
-var selectedAdminId = ref('')
-var selectedType = ref('')
 var confirmDialogRef = ref(null)
 var alertRef = ref(null)
 
 var form = reactive({
   name: '',
   description: '',
-  type: '',
-  capacity: '',
 })
 
 var isAdmin = computed(() => {
-  if (authStore.user?.isAdmin === true) return true
-  if (authStore.user?.isAdmin === 'true') return true
+  if (!authStore.user) return false
+  if (authStore.user.isAdmin === true) return true
+  if (authStore.user.isAdmin === 'true') return true
   return false
 })
 
-function getName(user) {
-  return user?.name || user?.email || 'Unknown'
-}
-
 function isJoined(project) {
-  var userId = authStore.user?._id
-  return project.members?.some((member) => member._id === userId) || false
-}
-
-function getPendingApplications() {
-  var result = []
-  for (var i = 0; i < applications.value.length; i++) {
-    if (applications.value[i].status === 'pending') {
-      result.push(applications.value[i])
+  if (!authStore.user) return false
+  var userId = authStore.user._id
+  for (var i = 0; i < project.members.length; i++) {
+    if (String(project.members[i]._id) === userId) {
+      return true
     }
   }
-  return result
+  return false
 }
 
-function getApprovedApplications() {
-  var result = []
-  for (var i = 0; i < applications.value.length; i++) {
-    if (applications.value[i].status === 'approved') {
-      result.push(applications.value[i])
+function getUniqueMembers(members) {
+  if (!members) return []
+  if (members.length === 0) return []
+  var unique = []
+  for (var i = 0; i < members.length; i++) {
+    var member = members[i]
+    var found = false
+    for (var j = 0; j < unique.length; j++) {
+      if (String(unique[j]._id) === String(member._id)) {
+        found = true
+        break
+      }
+    }
+    if (!found) {
+      unique.push(member)
     }
   }
-  return result
+  return unique
 }
 
-function getRejectedApplications() {
+function getApplicationsByStatus(status) {
   var result = []
   for (var i = 0; i < applications.value.length; i++) {
-    if (applications.value[i].status === 'rejected') {
+    if (applications.value[i].status === status) {
       result.push(applications.value[i])
     }
   }
@@ -547,7 +396,10 @@ async function loadProjects() {
     var response = await backend.get('/api/projects')
     projects.value = response.data
   } catch (error) {
-    error.value = error.response?.data?.msg || 'Error'
+    error.value = 'Error'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      error.value = error.response.data.msg
+    }
   }
   loading.value = false
 }
@@ -559,7 +411,10 @@ async function adminLoadApplications() {
     var response = await backend.get('/api/applications')
     applications.value = response.data
   } catch (error) {
-    error.value = error.response?.data?.msg || 'Error loading applications'
+    error.value = 'Error loading applications'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      error.value = error.response.data.msg
+    }
   }
   loadingApplications.value = false
 }
@@ -581,7 +436,10 @@ async function adminHandleApplication(applicationId, action) {
       )
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error handling application'
+    var errorMsg = 'Error handling application'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -595,9 +453,11 @@ async function joinProject(projectId) {
   loading.value = true
   try {
     var response = await backend.post('/api/projects/' + projectId + '/join', {})
-    var index = projects.value.findIndex((project) => project._id === projectId)
-    if (index >= 0) {
-      projects.value[index] = response.data
+    for (var i = 0; i < projects.value.length; i++) {
+      if (projects.value[i]._id === projectId) {
+        projects.value[i] = response.data
+        break
+      }
     }
     if (alertRef.value) {
       alertRef.value.show('success', 'Successfully joined project!', {
@@ -610,7 +470,10 @@ async function joinProject(projectId) {
       router.push('/tasks')
     }, 500)
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error joining project'
+    var errorMsg = 'Error joining project'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -624,9 +487,11 @@ async function leaveProject(projectId) {
   loading.value = true
   try {
     var response = await backend.post('/api/projects/' + projectId + '/leave', {})
-    var index = projects.value.findIndex((project) => project._id === projectId)
-    if (index >= 0) {
-      projects.value[index] = response.data
+    for (var i = 0; i < projects.value.length; i++) {
+      if (projects.value[i]._id === projectId) {
+        projects.value[i] = response.data
+        break
+      }
     }
     if (alertRef.value) {
       alertRef.value.show('success', 'Successfully left project!', {
@@ -635,7 +500,10 @@ async function leaveProject(projectId) {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error leaving project'
+    var errorMsg = 'Error leaving project'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -652,8 +520,6 @@ async function adminCreateProject() {
     projects.value.push(response.data)
     form.name = ''
     form.description = ''
-    form.type = ''
-    form.capacity = ''
     showCreateForm.value = false
     if (alertRef.value) {
       alertRef.value.show('success', 'Project created successfully!', {
@@ -662,7 +528,10 @@ async function adminCreateProject() {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error creating project'
+    var errorMsg = 'Error creating project'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -677,22 +546,23 @@ function adminEditProject(project) {
     _id: project._id,
     name: project.name,
     description: project.description,
-    type: project.type,
-    capacity: project.capacity,
   }
 }
 
 async function adminUpdateProject() {
   loading.value = true
   try {
-    var response = await backend.put(
-      '/api/projects/' + editingProject.value._id,
-      editingProject.value,
-    )
-    var index = projects.value.findIndex((project) => project._id === editingProject.value._id)
-    if (index >= 0) {
-      projects.value[index] = response.data
-      editingProject.value = null
+    var projectData = {
+      name: editingProject.value.name,
+      description: editingProject.value.description,
+    }
+    var response = await backend.put('/api/projects/' + editingProject.value._id, projectData)
+    for (var i = 0; i < projects.value.length; i++) {
+      if (projects.value[i]._id === editingProject.value._id) {
+        projects.value[i] = response.data
+        editingProject.value = null
+        break
+      }
     }
     if (alertRef.value) {
       alertRef.value.show('success', 'Project updated successfully!', {
@@ -701,7 +571,10 @@ async function adminUpdateProject() {
       })
     }
   } catch (error) {
-    var errorMsg = error.response?.data?.msg || 'Error updating project'
+    var errorMsg = 'Error updating project'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
     } else {
@@ -733,7 +606,13 @@ async function adminEndProject(projectId) {
           document.body.removeChild(link)
         }
 
-        projects.value = projects.value.filter((project) => project._id !== projectId)
+        var newProjects = []
+        for (var i = 0; i < projects.value.length; i++) {
+          if (projects.value[i]._id !== projectId) {
+            newProjects.push(projects.value[i])
+          }
+        }
+        projects.value = newProjects
         selectedProjectId.value = ''
         if (alertRef.value) {
           alertRef.value.show(
@@ -746,7 +625,10 @@ async function adminEndProject(projectId) {
           )
         }
       } catch (error) {
-        var errorMsg = error.response?.data?.msg || 'Error ending project'
+        var errorMsg = 'Error ending project'
+        if (error && error.response && error.response.data && error.response.data.msg) {
+          errorMsg = error.response.data.msg
+        }
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
         } else {

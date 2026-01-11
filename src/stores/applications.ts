@@ -2,42 +2,64 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 function loadFromStorage() {
-  try {
-    var stored = localStorage.getItem('pendingApplications')
-    if (stored) {
-      return JSON.parse(stored)
-    }
-  } catch (e) {
+  var stored = localStorage.getItem('pendingApplications')
+  if (!stored) {
     return []
   }
-  return []
+  try {
+    var parsed = JSON.parse(stored)
+    if (Array.isArray(parsed)) {
+      return parsed
+    }
+    return []
+  } catch (error) {
+    return []
+  }
 }
 
-function saveToStorage(projects: string[]) {
+function saveToStorage(projects) {
   try {
-    localStorage.setItem('pendingApplications', JSON.stringify(projects))
-  } catch (e) {
-    console.error('Error saving to localStorage', e)
+    var jsonString = JSON.stringify(projects)
+    localStorage.setItem('pendingApplications', jsonString)
+  } catch (error) {
+    console.error('Error saving to localStorage', error)
   }
 }
 
 export const useApplicationsStore = defineStore('applications', () => {
-  var pendingProjects = ref<string[]>(loadFromStorage())
+  var pendingProjects = ref(loadFromStorage())
 
-  function addPending(projectId: string) {
-    if (!pendingProjects.value.includes(projectId)) {
+  function addPending(projectId) {
+    var found = false
+    for (var i = 0; i < pendingProjects.value.length; i++) {
+      if (pendingProjects.value[i] === projectId) {
+        found = true
+        break
+      }
+    }
+    if (!found) {
       pendingProjects.value.push(projectId)
       saveToStorage(pendingProjects.value)
     }
   }
 
-  function removePending(projectId: string) {
-    pendingProjects.value = pendingProjects.value.filter((id) => id !== projectId)
+  function removePending(projectId) {
+    for (var i = 0; i < pendingProjects.value.length; i++) {
+      if (pendingProjects.value[i] === projectId) {
+        pendingProjects.value.splice(i, 1)
+        break
+      }
+    }
     saveToStorage(pendingProjects.value)
   }
 
-  function isPending(projectId: string) {
-    return pendingProjects.value.includes(projectId)
+  function isPending(projectId) {
+    for (var i = 0; i < pendingProjects.value.length; i++) {
+      if (pendingProjects.value[i] === projectId) {
+        return true
+      }
+    }
+    return false
   }
 
   return {

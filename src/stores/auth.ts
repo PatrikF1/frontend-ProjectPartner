@@ -24,7 +24,6 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    localStorage.removeItem('spaces')
   }
 
   function setLoading(loading: any) {
@@ -32,13 +31,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(loginData: any) {
-    const { data } = await backend.post('/api/auth/login', loginData)
-    return data
+    var response = await backend.post('/api/auth/login', loginData)
+    return response.data
   }
 
   async function register(registerData: any) {
-    const { data } = await backend.post('/api/auth/register', registerData)
-    return data
+    var response = await backend.post('/api/auth/register', registerData)
+    return response.data
   }
 
   return {

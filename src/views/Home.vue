@@ -13,8 +13,12 @@
 
         <h1 class="text-5xl md:text-6xl font-bold mb-6 text-white">ProjectPartner</h1>
 
-        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl">
-          Organize your projects and tasks in one place
+        <p class="text-xl md:text-2xl text-gray-300 mb-4 max-w-3xl">
+          AI Application for Student Project Support
+        </p>
+        <p class="text-lg text-gray-400 mb-8 max-w-2xl">
+          Helping students and professors organize and track university projects with AI-powered
+          assistance
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 mb-16">
@@ -35,43 +39,91 @@
     </div>
 
     <div class="container mx-auto px-6 py-20">
-      <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Why ProjectPartner?</h2>
+      <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">For Students and Professors</h2>
+      <p class="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
+        ProjectPartner helps students organize their university projects while giving professors
+        real-time insights into student progress and activity.
+      </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
-          <div class="text-indigo-400 text-4xl mb-4">📊</div>
-          <h3 class="text-xl font-semibold mb-3">Dashboard</h3>
-          <p class="text-gray-400">
-            Track all your projects and tasks in one place with an intuitive dashboard
-          </p>
-        </div>
-
-        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
-          <div class="text-indigo-400 text-4xl mb-4">📅</div>
-          <h3 class="text-xl font-semibold mb-3">Calendar</h3>
-          <p class="text-gray-400">
-            Organize your events and deadlines with an integrated calendar
-          </p>
-        </div>
-
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
         <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
           <div class="text-indigo-400 text-4xl mb-4">🤖</div>
           <h3 class="text-xl font-semibold mb-3">AI Helper</h3>
           <p class="text-gray-400">
-            Get intelligent assistance and suggestions for your projects and tasks
+            Get instant answers to common questions about projects, deadlines, and technology. The
+            AI assistant can also help create tasks and projects.
+          </p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+          <div class="text-indigo-400 text-4xl mb-4">📊</div>
+          <h3 class="text-xl font-semibold mb-3">Activity Tracking</h3>
+          <p class="text-gray-400">
+            Track student activities, task completion, and project progress. Professors can monitor
+            each student's contribution in real-time.
           </p>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
           <div class="text-indigo-400 text-4xl mb-4">✅</div>
           <h3 class="text-xl font-semibold mb-3">Task Management</h3>
-          <p class="text-gray-400">Create, assign, and track task status in real-time</p>
+          <p class="text-gray-400">
+            Create and manage tasks with deadlines. Track task status and see what needs to be done
+            next.
+          </p>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
           <div class="text-indigo-400 text-4xl mb-4">📁</div>
-          <h3 class="text-xl font-semibold mb-3">Projects</h3>
-          <p class="text-gray-400">Organize your projects by categories and track their progress</p>
+          <h3 class="text-xl font-semibold mb-3">Project Organization</h3>
+          <p class="text-gray-400">
+            Organize university projects, join teams, and collaborate with other students. Apply to
+            projects and track your applications.
+          </p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+          <div class="text-indigo-400 text-4xl mb-4">📅</div>
+          <h3 class="text-xl font-semibold mb-3">Deadline Management</h3>
+          <p class="text-gray-400">
+            Keep track of important deadlines and events. Never miss a project submission date or
+            important milestone.
+          </p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
+          <div class="text-indigo-400 text-4xl mb-4">📈</div>
+          <h3 class="text-xl font-semibold mb-3">Progress Reports</h3>
+          <p class="text-gray-400">
+            Professors can generate PDF reports with student statistics, task completion rates, and
+            project summaries.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 rounded-lg p-8 max-w-4xl mx-auto">
+        <h3 class="text-2xl font-semibold mb-4 text-center">How It Works</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="text-lg font-semibold text-indigo-400 mb-2">For Students</h4>
+            <ul class="text-gray-400 space-y-2">
+              <li>• Join or create projects</li>
+              <li>• Create and manage tasks</li>
+              <li>• Get AI assistance with questions</li>
+              <li>• Track deadlines and progress</li>
+              <li>• Submit project applications</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-indigo-400 mb-2">For Professors</h4>
+            <ul class="text-gray-400 space-y-2">
+              <li>• Create and manage projects</li>
+              <li>• Assign tasks to students</li>
+              <li>• Monitor student activity</li>
+              <li>• Review project applications</li>
+              <li>• Generate progress reports</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
