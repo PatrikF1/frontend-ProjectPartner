@@ -871,14 +871,6 @@ async function loadTasks() {
   isLoadingTasks.value = false
 }
 
-function formatDeadline(deadline) {
-  if (!deadline) return '-'
-  if (typeof deadline === 'string') {
-    return deadline.split('T')[0]
-  }
-  var date = new Date(deadline)
-  return date.toISOString().split('T')[0]
-}
 
 function getFilteredAdminTasks() {
   var result = []
@@ -1079,11 +1071,9 @@ async function createAdminTask() {
       description: adminTaskForm.description,
       status: 'not-started',
     })
-    Object.assign(adminTaskForm, {
-      projectId: '',
-      name: '',
-      description: '',
-    })
+    adminTaskForm.projectId = ''
+    adminTaskForm.name = ''
+    adminTaskForm.description = ''
     showAdminTaskForm.value = false
     await loadTasks()
     if (alertRef.value) {

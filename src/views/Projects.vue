@@ -342,6 +342,7 @@ import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'
+import { formatDeadline } from '@/utils/date.js'
 
 var router = useRouter()
 var authStore = useAuthStore()
@@ -365,9 +366,7 @@ var form = reactive({
 
 var isAdmin = computed(() => {
   if (!authStore.user) return false
-  if (authStore.user.isAdmin === true) return true
-  if (authStore.user.isAdmin === 'true') return true
-  return false
+  return authStore.user.isAdmin === true
 })
 
 function isJoined(project) {
@@ -577,14 +576,6 @@ function adminEditProject(project) {
   }
 }
 
-function formatDeadline(deadline) {
-  if (!deadline) return ''
-  if (typeof deadline === 'string') {
-    return deadline.split('T')[0]
-  }
-  var date = new Date(deadline)
-  return date.toISOString().split('T')[0]
-}
 
 async function adminUpdateProject() {
   loading.value = true
