@@ -60,11 +60,13 @@
                     @click.stop="toggleEventPopup(event)"
                     :class="[
                       'text-[10px] sm:text-xs p-0.5 sm:p-1 rounded cursor-pointer hover:opacity-80 truncate',
-                      event.isAdminEvent
-                        ? 'bg-yellow-600 text-white'
-                        : event.taskId || event.task
-                          ? 'bg-green-600 text-white'
-                          : 'bg-indigo-600 text-white',
+                      event.isProjectDeadline
+                        ? 'bg-red-600 text-white'
+                        : event.isAdminEvent
+                          ? 'bg-yellow-600 text-white'
+                          : event.taskId || event.task
+                            ? 'bg-green-600 text-white'
+                            : 'bg-indigo-600 text-white',
                     ]"
                     :title="event.title || 'No title'"
                   >

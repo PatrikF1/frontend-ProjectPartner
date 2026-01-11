@@ -138,6 +138,17 @@
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             ></textarea>
 
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1"
+                >Deadline (optional)</label
+              >
+              <input
+                v-model="editingProject.deadline"
+                type="date"
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
             <div class="flex space-x-2">
               <button
                 type="submit"
@@ -546,7 +557,17 @@ function adminEditProject(project) {
     _id: project._id,
     name: project.name,
     description: project.description,
+    deadline: project.deadline ? formatDeadline(project.deadline) : '',
   }
+}
+
+function formatDeadline(deadline) {
+  if (!deadline) return ''
+  if (typeof deadline === 'string') {
+    return deadline.split('T')[0]
+  }
+  var date = new Date(deadline)
+  return date.toISOString().split('T')[0]
 }
 
 async function adminUpdateProject() {
@@ -555,6 +576,7 @@ async function adminUpdateProject() {
     var projectData = {
       name: editingProject.value.name,
       description: editingProject.value.description,
+      deadline: editingProject.value.deadline || null,
     }
     var response = await backend.put('/api/projects/' + editingProject.value._id, projectData)
     for (var i = 0; i < projects.value.length; i++) {
