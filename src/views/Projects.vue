@@ -30,6 +30,15 @@
             placeholder="Description"
           ></textarea>
 
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Deadline (optional)</label>
+            <input
+              v-model="form.deadline"
+              type="date"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
           <Alert ref="alertRef" />
 
           <button
@@ -351,6 +360,7 @@ var alertRef = ref(null)
 var form = reactive({
   name: '',
   description: '',
+  deadline: '',
 })
 
 var isAdmin = computed(() => {
@@ -527,10 +537,16 @@ async function leaveProject(projectId) {
 async function adminCreateProject() {
   loading.value = true
   try {
-    var response = await backend.post('/api/projects', form)
+    var projectData = {
+      name: form.name,
+      description: form.description,
+      deadline: form.deadline || null,
+    }
+    var response = await backend.post('/api/projects', projectData)
     projects.value.push(response.data)
     form.name = ''
     form.description = ''
+    form.deadline = ''
     showCreateForm.value = false
     if (alertRef.value) {
       alertRef.value.show('success', 'Project created successfully!', {

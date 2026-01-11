@@ -145,22 +145,6 @@ async function handleSubmit() {
     var responseMessage =
       response.data.message || "I apologize, but I couldn't process your request."
 
-    if (response.data.actions && response.data.actions.length > 0) {
-      var hasSuccess = false
-      for (var i = 0; i < response.data.actions.length; i++) {
-        if (response.data.actions[i].success) {
-          hasSuccess = true
-          break
-        }
-      }
-
-      if (hasSuccess) {
-        setTimeout(function () {
-          window.location.reload()
-        }, 1500)
-      }
-    }
-
     messages.value.push({
       id: Date.now() + 1,
       role: 'assistant',
