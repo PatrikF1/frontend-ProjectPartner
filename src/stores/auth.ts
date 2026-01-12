@@ -7,14 +7,14 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token'))
   const isLoading = ref(false)
 
-  function setUser(userData: any) {
+  function setUser(userData) {
     user.value = userData
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
-  function setToken(tokenValue: any) {
+  function setToken(tokenValue) {
     token.value = tokenValue
-    localStorage.setItem('token', tokenValue)
+    localStorage.setItem('token', tokenValue || '')
   }
 
   function logout() {
@@ -24,16 +24,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  function setLoading(loading: any) {
+  function setLoading(loading) {
     isLoading.value = loading
   }
 
-  async function login(loginData: any) {
+  async function login(loginData) {
     var response = await backend.post('/api/auth/login', loginData)
     return response.data
   }
 
-  async function register(registerData: any) {
+  async function register(registerData) {
     var response = await backend.post('/api/auth/register', registerData)
     return response.data
   }

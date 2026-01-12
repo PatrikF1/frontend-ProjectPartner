@@ -42,11 +42,6 @@
             </div>
 
             <div class="bg-gray-700 rounded-lg p-4">
-              <label class="block text-sm text-gray-400 mb-1">Phone</label>
-              <p class="text-white">{{ user.phone || 'N/A' }}</p>
-            </div>
-
-            <div class="bg-gray-700 rounded-lg p-4">
               <label class="block text-sm text-gray-400 mb-1">Role</label>
               <p class="text-white">{{ user.isAdmin ? 'Administrator' : 'Member' }}</p>
             </div>
@@ -58,11 +53,38 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Layout from '@/components/Layout.vue'
 import defaultAvatar from '@/assets/icon-prof.png'
+import { backend } from '@/services/backend'
 
 const authStore = useAuthStore()
-const user = computed(() => authStore.user || {})
+const route = useRoute()
+var profileUser = ref(null)
+var isLoading = ref(false)
+
+onMounted(async () => {
+  var userId = route.query.userId
+  if (userId) {
+    isLoading.value = true
+    try {
+      var response = await backend.get(`/api/users/${userId}`)
+      profileUser.value = response.data
+    } catch (error) {
+      console.error('Error fetching user:', error)
+      profileUser.value = null
+    } finally {
+      isLoading.value = false
+    }
+  }
+})
+
+const user = computed(() => {
+  if (profileUser.value) {
+    return profileUser.value
+  }
+  return authStore.user || {}
+})
 </script>

@@ -415,6 +415,12 @@
             placeholder="Description"
             class="w-full px-3 py-2 bg-gray-600 text-white rounded"
           ></textarea>
+          <input
+            v-model="adminTaskForm.deadline"
+            type="date"
+            placeholder="Deadline (optional)"
+            class="w-full px-3 py-2 bg-gray-600 text-white rounded"
+          />
           <button
             type="submit"
             :disabled="isLoadingTasks"
@@ -542,10 +548,12 @@
                 </td>
                 <td
                   class="px-6 py-4 text-gray-300 text-base align-middle"
-                  @click="toggleTaskPopup(task)"
+                  @click.stop="openUserProfile(task.createdBy)"
                   style="cursor: pointer"
                 >
-                  {{ task.createdBy?.name || task.createdBy?.email || 'Unknown' }}
+                  <span class="text-indigo-400 hover:text-indigo-300 hover:underline">
+                    {{ task.createdBy?.name || task.createdBy?.email || 'Unknown' }}
+                  </span>
                 </td>
                 <td
                   class="px-6 py-4 text-gray-300 text-base align-middle"
@@ -670,6 +678,7 @@ import { reactive, ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useApplicationsStore } from '@/stores/applications'
 import { backend } from '@/services/backend'
+import { useRouter } from 'vue-router'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'
@@ -677,6 +686,7 @@ import { formatDeadline } from '@/utils/date.js'
 
 var authStore = useAuthStore()
 var applicationsStore = useApplicationsStore()
+var router = useRouter()
 
 var isLoading = ref(false)
 var isLoadingTasks = ref(false)
@@ -715,6 +725,7 @@ var adminTaskForm = reactive({
   projectId: '',
   name: '',
   description: '',
+  deadline: '',
 })
 
 var isAdmin = computed(() => {
@@ -733,6 +744,14 @@ function isTaskCreatedByUser(task) {
   var userId = authStore.user ? authStore.user._id : null
   var taskCreatorId = task.createdBy?._id || task.createdBy
   return String(userId) === String(taskCreatorId)
+}
+
+function openUserProfile(createdBy) {
+  if (!createdBy) return
+  var userId = createdBy._id || createdBy
+  if (userId) {
+    router.push({ path: '/profile', query: { userId: String(userId) } })
+  }
 }
 
 function getNonAdminUsers() {
@@ -1026,18 +1045,6 @@ async function createTask(app) {
       status: 'in-progress',
       deadline: newTaskForm.deadline || null,
     })
-    var createdTask = response.data
-
-    if (newTaskForm.deadline) {
-      await backend.post('/api/calendar/events', {
-        title: newTaskForm.name,
-        date: newTaskForm.deadline,
-        description: newTaskForm.description || 'Task deadline',
-        projectId: app.projectId._id || app.projectId,
-        taskId: createdTask._id,
-      })
-    }
-
     newTaskForm.name = ''
     newTaskForm.description = ''
     newTaskForm.deadline = ''
@@ -1070,11 +1077,13 @@ async function createAdminTask() {
       projectId: adminTaskForm.projectId,
       name: adminTaskForm.name,
       description: adminTaskForm.description,
+      deadline: adminTaskForm.deadline || null,
       status: 'not-started',
     })
     adminTaskForm.projectId = ''
     adminTaskForm.name = ''
     adminTaskForm.description = ''
+    adminTaskForm.deadline = ''
     showAdminTaskForm.value = false
     await loadTasks()
     if (alertRef.value) {

@@ -31,14 +31,7 @@
         </div>
 
         <div>
-          <div class="flex items-center justify-between">
-            <label for="password" class="block text-sm/6 font-medium text-gray-100">Password</label>
-            <div class="text-sm">
-              <a href="#" class="font-semibold text-indigo-400 hover:text-indigo-300"
-                >Forgot password?</a
-              >
-            </div>
-          </div>
+          <label for="password" class="block text-sm/6 font-medium text-gray-100">Password</label>
           <div class="mt-2">
             <input
               v-model.trim="form.password"
