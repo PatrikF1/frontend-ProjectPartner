@@ -105,7 +105,15 @@
             <p v-if="selectedEvent.description" class="text-gray-300">
               <span class="font-medium">Description:</span> {{ selectedEvent.description }}
             </p>
-            <p class="text-gray-300">
+            <p v-if="selectedEvent.taskId && selectedEvent.taskId.createdBy" class="text-gray-300">
+              <span class="font-medium">Task created by:</span>
+              {{
+                selectedEvent.taskId.createdBy.name ||
+                selectedEvent.taskId.createdBy.email ||
+                'Unknown'
+              }}
+            </p>
+            <p v-else class="text-gray-300">
               <span class="font-medium">Created by:</span>
               {{ selectedEvent.createdBy?.name || selectedEvent.createdBy?.email || 'Unknown' }}
             </p>

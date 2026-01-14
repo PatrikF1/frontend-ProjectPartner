@@ -68,7 +68,10 @@
             class="bg-gray-700 rounded-lg p-4 border-l-4 border-indigo-500"
           >
             <div class="flex justify-between items-start mb-3">
-              <h3 class="text-lg font-medium text-white">{{ project.name }}</h3>
+              <div>
+                <h3 class="text-lg font-medium text-white">{{ project.name }}</h3>
+                <p class="text-xs text-gray-400 mt-1">Owner: {{ project.createdBy?.name || project.createdBy?.email || 'Unknown' }}</p>
+              </div>
               <div class="flex space-x-2">
                 <button
                   v-if="!isJoined(project) && !isAdmin"
