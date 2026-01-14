@@ -2,35 +2,8 @@
   <Layout>
     <div class="min-h-screen bg-gray-900 p-6">
       <div class="mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-          <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Hello, {{ getUserName() }}!</h1>
-            <p class="text-gray-400">Overview of your projects and tasks</p>
-          </div>
-          <div class="flex items-center gap-6">
-            <div class="bg-gray-800 rounded-lg px-8 py-5 border border-gray-700 min-w-[280px]">
-              <div class="flex items-center gap-4">
-                <svg
-                  class="w-8 h-8 text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                <div>
-                  <p class="text-white font-bold text-2xl">{{ currentTime }}</p>
-                  <p class="text-gray-400 text-sm">{{ currentDate }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h1 class="text-3xl font-bold text-white mb-2">Hello, {{ getUserName() }}!</h1>
+        <p class="text-gray-400">Overview of your projects and tasks</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -85,103 +58,52 @@
         </div>
       </div>
 
-      <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-        <div class="flex justify-between items-center mb-6">
+      <div class="bg-gray-800 rounded-lg p-4 mb-6">
+        <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold text-white">Tasks Overview</h3>
           <button
-            class="text-green-400 text-sm font-medium hover:text-green-300"
+            class="text-green-400 text-sm hover:text-green-300"
             @click="$router.push('/tasks')"
           >
             See All →
           </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-gray-700 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                <span class="text-sm text-gray-400">Done</span>
-              </div>
-              <span class="text-2xl font-bold text-white">{{ getTaskPercent().done }}%</span>
-            </div>
-            <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
-              <div
-                class="bg-green-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: getTaskPercent().done + '%' }"
-              ></div>
-            </div>
-            <p class="text-xs text-gray-400">{{ getTaskCount().done }} tasks</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-gray-700 rounded p-3 text-center">
+            <p class="text-green-400 text-2xl font-bold">{{ getTaskCount().done }}</p>
+            <p class="text-gray-400 text-xs">Done</p>
           </div>
-
-          <div class="bg-gray-700 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
-                <span class="text-sm text-gray-400">In Progress</span>
-              </div>
-              <span class="text-2xl font-bold text-white">{{ getTaskPercent().inProgress }}%</span>
-            </div>
-            <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
-              <div
-                class="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: getTaskPercent().inProgress + '%' }"
-              ></div>
-            </div>
-            <p class="text-xs text-gray-400">{{ getTaskCount().inProgress }} tasks</p>
+          <div class="bg-gray-700 rounded p-3 text-center">
+            <p class="text-purple-400 text-2xl font-bold">{{ getTaskCount().inProgress }}</p>
+            <p class="text-gray-400 text-xs">In Progress</p>
           </div>
-
-          <div class="bg-gray-700 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <span class="text-sm text-gray-400">To-Do</span>
-              </div>
-              <span class="text-2xl font-bold text-white">{{ getTaskPercent().todo }}%</span>
-            </div>
-            <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
-              <div
-                class="bg-yellow-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: getTaskPercent().todo + '%' }"
-              ></div>
-            </div>
-            <p class="text-xs text-gray-400">{{ getTaskCount().todo }} tasks</p>
+          <div class="bg-gray-700 rounded p-3 text-center">
+            <p class="text-yellow-400 text-2xl font-bold">{{ getTaskCount().todo }}</p>
+            <p class="text-gray-400 text-xs">To-Do</p>
           </div>
-
-          <div class="bg-gray-700 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                <span class="text-sm text-gray-400">Overdue</span>
-              </div>
-              <span class="text-2xl font-bold text-white">{{ getTaskPercent().overdue }}%</span>
-            </div>
-            <div class="w-full bg-gray-600 rounded-full h-2 mb-2">
-              <div
-                class="bg-red-500 h-2 rounded-full transition-all duration-500"
-                :style="{ width: getTaskPercent().overdue + '%' }"
-              ></div>
-            </div>
-            <p class="text-xs text-gray-400">{{ getTaskCount().overdue }} tasks</p>
+          <div class="bg-gray-700 rounded p-3 text-center">
+            <p class="text-red-400 text-2xl font-bold">{{ getTaskCount().overdue }}</p>
+            <p class="text-gray-400 text-xs">Overdue</p>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gray-800 rounded-lg p-4">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-white">Recent Tasks</h3>
             <button
-              class="text-green-400 text-sm font-medium hover:text-green-300"
+              class="text-green-400 text-sm hover:text-green-300"
               @click="$router.push('/tasks')"
             >
               See All →
             </button>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-2">
             <div
               v-for="task in getRecentTasks()"
               :key="task._id"
-              class="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 cursor-pointer border-l-4"
+              class="bg-gray-700 rounded p-3 hover:bg-gray-600 cursor-pointer border-l-4"
               :class="
                 task.status === 'completed'
                   ? 'border-green-500'
@@ -191,20 +113,8 @@
               "
               @click="$router.push('/tasks')"
             >
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2 flex-1">
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    :class="
-                      task.status === 'completed'
-                        ? 'bg-green-500'
-                        : task.status === 'in-progress'
-                          ? 'bg-yellow-500'
-                          : 'bg-gray-500'
-                    "
-                  ></div>
-                  <p class="text-white font-medium text-sm">{{ task.name }}</p>
-                </div>
+              <div class="flex justify-between items-center">
+                <p class="text-white text-sm font-medium">{{ task.name }}</p>
                 <span
                   class="text-xs px-2 py-1 rounded"
                   :class="
@@ -218,15 +128,7 @@
                   {{ task.status }}
                 </span>
               </div>
-              <p class="text-xs text-gray-400 flex items-center gap-1" v-if="task.deadline">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  ></path>
-                </svg>
+              <p class="text-xs text-gray-400" v-if="task.deadline">
                 {{ formatDate(task.deadline) }}
               </p>
             </div>
@@ -236,41 +138,25 @@
           </div>
         </div>
 
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <div class="bg-gray-800 rounded-lg p-4">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-white">Upcoming Deadlines</h3>
             <button
-              class="text-green-400 text-sm font-medium hover:text-green-300"
+              class="text-green-400 text-sm hover:text-green-300"
               @click="$router.push('/calendar')"
             >
               See Calendar →
             </button>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-2">
             <div
               v-for="task in getUpcomingDeadlines()"
               :key="task._id"
-              class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 border-blue-500 transition-all"
+              class="bg-gray-700 rounded p-3 hover:bg-gray-600 cursor-pointer border-l-4 border-blue-500"
               @click="$router.push('/tasks')"
             >
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2 flex-1">
-                  <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <p class="text-white font-medium text-sm">{{ task.name }}</p>
-                </div>
-                <span class="text-xs px-2 py-1 rounded bg-blue-600 text-white"> Due Soon </span>
-              </div>
-              <p class="text-xs text-gray-400 flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                Due: {{ formatDate(task.deadline) }}
-              </p>
+              <p class="text-white text-sm font-medium">{{ task.name }}</p>
+              <p class="text-xs text-gray-400">Due: {{ formatDate(task.deadline) }}</p>
             </div>
             <p
               v-if="getUpcomingDeadlines().length === 0"
@@ -281,32 +167,26 @@
           </div>
         </div>
 
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <div class="bg-gray-800 rounded-lg p-4">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-white">Past Tasks</h3>
             <button
-              class="text-green-400 text-sm font-medium hover:text-green-300"
+              class="text-green-400 text-sm hover:text-green-300"
               @click="$router.push('/tasks')"
             >
               See All →
             </button>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-2">
             <div
               v-for="task in getPastTasks()"
               :key="task._id"
-              class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 cursor-pointer border-l-4 transition-all"
+              class="bg-gray-700 rounded p-3 hover:bg-gray-600 cursor-pointer border-l-4"
               :class="task.status === 'completed' ? 'border-green-500' : 'border-red-500'"
               @click="$router.push('/tasks')"
             >
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2 flex-1">
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    :class="task.status === 'completed' ? 'bg-green-500' : 'bg-red-500'"
-                  ></div>
-                  <p class="text-white font-medium text-sm">{{ task.name }}</p>
-                </div>
+              <div class="flex justify-between items-center">
+                <p class="text-white text-sm font-medium">{{ task.name }}</p>
                 <span
                   class="text-xs px-2 py-1 rounded"
                   :class="
@@ -315,18 +195,10 @@
                       : 'bg-red-600 text-white'
                   "
                 >
-                  {{ task.status === 'completed' ? 'Completed' : 'Overdue' }}
+                  {{ task.status === 'completed' ? 'Done' : 'Overdue' }}
                 </span>
               </div>
-              <p class="text-xs text-gray-400 flex items-center gap-1" v-if="task.deadline">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  ></path>
-                </svg>
+              <p class="text-xs text-gray-400" v-if="task.deadline">
                 {{ formatDate(task.deadline) }}
               </p>
             </div>
@@ -378,7 +250,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
@@ -386,11 +258,7 @@ import Layout from '@/components/Layout.vue'
 var authStore = useAuthStore()
 var isLoading = ref(false)
 var dashboardData = ref({})
-var currentTime = ref('')
-var currentDate = ref('')
 var selectedProjectFilter = ref('')
-
-var timeInterval = null
 
 var isAdmin = computed(() => {
   if (authStore.user && authStore.user.isAdmin === true) {
@@ -406,109 +274,46 @@ function getUserName() {
   return authStore.user?.name || authStore.user?.email || 'User'
 }
 
-function updateTime() {
-  var now = new Date()
-  var hours = now.getHours().toString().padStart(2, '0')
-  var minutes = now.getMinutes().toString().padStart(2, '0')
-  var seconds = now.getSeconds().toString().padStart(2, '0')
-  currentTime.value = hours + ':' + minutes + ':' + seconds
-
-  var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  var months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ]
-  currentDate.value =
-    days[now.getDay()] +
-    ', ' +
-    months[now.getMonth()] +
-    ' ' +
-    now.getDate() +
-    ', ' +
-    now.getFullYear()
-}
-
 function getAllTasks() {
   var tasks = []
   if (isAdmin.value) {
-    var filtered = getFilteredTasks()
-    if (filtered.length > 0) {
-      tasks = filtered
-    } else {
-      tasks = dashboardData.value.tasks || []
-    }
+    tasks = dashboardData.value.tasks || []
   } else {
     tasks = dashboardData.value.myTasks || []
   }
 
-  if (selectedProjectFilter.value) {
-    var filteredByProject = []
-    var availableProjectIds = []
-    var projects = getAvailableProjects()
-    for (var i = 0; i < projects.length; i++) {
-      availableProjectIds.push(String(projects[i]._id))
-    }
-
-    for (var j = 0; j < tasks.length; j++) {
-      var task = tasks[j]
-      var taskProjectId = task.projectId
-      if (taskProjectId && taskProjectId._id) {
-        taskProjectId = taskProjectId._id
-      }
-      if (taskProjectId && String(taskProjectId) === String(selectedProjectFilter.value)) {
-        if (availableProjectIds.includes(String(taskProjectId))) {
-          filteredByProject.push(task)
-        }
-      }
-    }
-    return filteredByProject
-  }
-
-  var validTasks = []
   var availableProjectIds = []
   var projects = getAvailableProjects()
-  for (var k = 0; k < projects.length; k++) {
-    availableProjectIds.push(String(projects[k]._id))
+  for (var i = 0; i < projects.length; i++) {
+    availableProjectIds.push(String(projects[i]._id))
   }
 
+  var result = []
   var seenTaskIds = []
-  for (var l = 0; l < tasks.length; l++) {
-    var task = tasks[l]
-    if (!task || !task._id) {
-      continue
-    }
+
+  for (var j = 0; j < tasks.length; j++) {
+    var task = tasks[j]
+    if (!task || !task._id) continue
+
     var taskId = String(task._id)
-    var alreadySeen = false
-    for (var m = 0; m < seenTaskIds.length; m++) {
-      if (seenTaskIds[m] === taskId) {
-        alreadySeen = true
-        break
-      }
-    }
-    if (alreadySeen) {
-      continue
-    }
     var taskProjectId = task.projectId
     if (taskProjectId && taskProjectId._id) {
       taskProjectId = taskProjectId._id
     }
-    if (taskProjectId && availableProjectIds.includes(String(taskProjectId))) {
+
+    var alreadySeen = seenTaskIds.indexOf(taskId) !== -1
+    var inAvailableProject =
+      taskProjectId && availableProjectIds.indexOf(String(taskProjectId)) !== -1
+    var matchesFilter =
+      !selectedProjectFilter.value || String(taskProjectId) === String(selectedProjectFilter.value)
+
+    if (!alreadySeen && inAvailableProject && matchesFilter) {
       seenTaskIds.push(taskId)
-      validTasks.push(task)
+      result.push(task)
     }
   }
 
-  return validTasks
+  return result
 }
 
 function getStats() {
@@ -633,38 +438,18 @@ function getTaskCount() {
   }
 }
 
-function getTaskPercent() {
-  var total = getAllTasks().length
-  if (!total) return { done: 0, inProgress: 0, todo: 0, overdue: 0 }
-  var counts = getTaskCount()
-  return {
-    done: Math.round((counts.done / total) * 100),
-    inProgress: Math.round((counts.inProgress / total) * 100),
-    todo: Math.round((counts.todo / total) * 100),
-    overdue: Math.round((counts.overdue / total) * 100),
-  }
-}
-
 function getRecentTasks() {
   var tasks = getAllTasks()
-  var sorted = []
-  for (var i = 0; i < tasks.length; i++) {
-    sorted.push(tasks[i])
-  }
-  for (var j = 0; j < sorted.length - 1; j++) {
-    for (var k = 0; k < sorted.length - j - 1; k++) {
-      var dateA = new Date(sorted[k].createdAt || sorted[k].updatedAt || 0)
-      var dateB = new Date(sorted[k + 1].createdAt || sorted[k + 1].updatedAt || 0)
-      if (dateA < dateB) {
-        var temp = sorted[k]
-        sorted[k] = sorted[k + 1]
-        sorted[k + 1] = temp
-      }
-    }
-  }
+
+  tasks.sort(function (a, b) {
+    var dateA = new Date(a.createdAt || a.updatedAt || 0)
+    var dateB = new Date(b.createdAt || b.updatedAt || 0)
+    return dateB - dateA
+  })
+
   var result = []
-  for (var l = 0; l < 5 && l < sorted.length; l++) {
-    result.push(sorted[l])
+  for (var i = 0; i < 5 && i < tasks.length; i++) {
+    result.push(tasks[i])
   }
   return result
 }
@@ -721,25 +506,13 @@ function getUpcomingDeadlines() {
     }
   }
 
-  for (var j = 0; j < filtered.length - 1; j++) {
-    for (var k = 0; k < filtered.length - j - 1; k++) {
-      try {
-        var dateA = new Date(filtered[k].deadline)
-        var dateB = new Date(filtered[k + 1].deadline)
-        if (dateA > dateB) {
-          var temp = filtered[k]
-          filtered[k] = filtered[k + 1]
-          filtered[k + 1] = temp
-        }
-      } catch (error) {
-        continue
-      }
-    }
-  }
+  filtered.sort(function (a, b) {
+    return new Date(a.deadline) - new Date(b.deadline)
+  })
 
   var result = []
-  for (var l = 0; l < 5 && l < filtered.length; l++) {
-    result.push(filtered[l])
+  for (var i = 0; i < 5 && i < filtered.length; i++) {
+    result.push(filtered[i])
   }
   return result
 }
@@ -806,25 +579,15 @@ function getPastTasks() {
     }
   }
 
-  for (var j = 0; j < filtered.length - 1; j++) {
-    for (var k = 0; k < filtered.length - j - 1; k++) {
-      try {
-        var dateA = new Date(filtered[k].deadline || filtered[k].updatedAt || 0)
-        var dateB = new Date(filtered[k + 1].deadline || filtered[k + 1].updatedAt || 0)
-        if (dateA < dateB) {
-          var temp = filtered[k]
-          filtered[k] = filtered[k + 1]
-          filtered[k + 1] = temp
-        }
-      } catch (error) {
-        continue
-      }
-    }
-  }
+  filtered.sort(function (a, b) {
+    var dateA = new Date(a.deadline || a.updatedAt || 0)
+    var dateB = new Date(b.deadline || b.updatedAt || 0)
+    return dateB - dateA
+  })
 
   var result = []
-  for (var l = 0; l < 5 && l < filtered.length; l++) {
-    result.push(filtered[l])
+  for (var i = 0; i < 5 && i < filtered.length; i++) {
+    result.push(filtered[i])
   }
   return result
 }
@@ -874,45 +637,11 @@ function formatDate(dateString) {
   }
 }
 
-function getAllProjects() {
-  return dashboardData.value.allProjects || []
-}
-
 function getAvailableProjects() {
   if (isAdmin.value) {
     return dashboardData.value.allProjects || []
   }
   return dashboardData.value.myProjects || []
-}
-
-function getFilteredTasks() {
-  if (!isAdmin.value) return []
-  var tasks = dashboardData.value.tasks || []
-  if (!selectedProjectFilter.value) {
-    return tasks
-  }
-  var result = []
-  var availableProjectIds = []
-  var projects = getAllProjects()
-  for (var p = 0; p < projects.length; p++) {
-    availableProjectIds.push(String(projects[p]._id))
-  }
-
-  for (var i = 0; i < tasks.length; i++) {
-    var task = tasks[i]
-    var taskProjectId = task.projectId
-    if (taskProjectId && taskProjectId._id) {
-      taskProjectId = taskProjectId._id
-    }
-    if (!taskProjectId || !availableProjectIds.includes(String(taskProjectId))) {
-      continue
-    }
-
-    if (String(taskProjectId) === String(selectedProjectFilter.value)) {
-      result.push(task)
-    }
-  }
-  return result
 }
 
 function getPendingApplications() {
@@ -1016,15 +745,7 @@ async function loadData() {
   isLoading.value = false
 }
 
-onMounted(() => {
-  updateTime()
-  timeInterval = setInterval(updateTime, 1000)
+onMounted(function () {
   loadData()
-})
-
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval)
-  }
 })
 </script>

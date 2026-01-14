@@ -690,7 +690,6 @@ var router = useRouter()
 
 var isLoading = ref(false)
 var isLoadingTasks = ref(false)
-var errorMessage = ref(null)
 var selectedProjectId = ref('')
 var openTaskFormForApplicationId = ref('')
 var showTaskPopup = ref(false)
@@ -885,77 +884,43 @@ async function loadTasks() {
       allTasks.value = myTasksResponse.data || []
     }
   } catch (error) {
-    errorMessage.value = 'Error loading tasks'
-    console.error(error)
+    console.error('Error loading tasks:', error)
   }
   isLoadingTasks.value = false
 }
-
 
 function getFilteredAdminTasks() {
   var result = []
 
   for (var i = 0; i < allTasks.value.length; i++) {
-    result.push(allTasks.value[i])
-  }
+    var task = allTasks.value[i]
 
-  if (adminSelectedProjectId.value) {
-    var filteredByProject = []
-    for (var k = 0; k < result.length; k++) {
-      var task = result[k]
-      var taskProjectId = task.projectId
-      if (taskProjectId && taskProjectId._id) {
-        taskProjectId = taskProjectId._id
-      }
-      if (String(taskProjectId) === String(adminSelectedProjectId.value)) {
-        filteredByProject.push(task)
-      }
+    var taskProjectId = task.projectId
+    if (taskProjectId && taskProjectId._id) {
+      taskProjectId = taskProjectId._id
     }
-    result = filteredByProject
-  }
 
-  if (adminSelectedUserId.value) {
-    var filteredByUser = []
-    for (var j = 0; j < result.length; j++) {
-      var task = result[j]
-      var taskUserId = task.createdBy
-      if (taskUserId && taskUserId._id) {
-        taskUserId = taskUserId._id
-      }
-      if (String(taskUserId) === String(adminSelectedUserId.value)) {
-        filteredByUser.push(task)
-      }
+    var taskUserId = task.createdBy
+    if (taskUserId && taskUserId._id) {
+      taskUserId = taskUserId._id
     }
-    result = filteredByUser
-  }
 
-  if (adminSelectedStatusFilter.value) {
-    var filteredByStatus = []
-    for (var l = 0; l < result.length; l++) {
-      if (result[l].status === adminSelectedStatusFilter.value) {
-        filteredByStatus.push(result[l])
-      }
-    }
-    result = filteredByStatus
-  }
+    var taskName = task.name ? task.name.toLowerCase() : ''
+    var taskDesc = task.description ? task.description.toLowerCase() : ''
+    var search = taskSearchQuery.value ? taskSearchQuery.value.toLowerCase() : ''
 
-  if (taskSearchQuery.value) {
-    var search = taskSearchQuery.value.toLowerCase()
-    var filteredBySearch = []
-    for (var n = 0; n < result.length; n++) {
-      var taskName = ''
-      if (result[n].name) {
-        taskName = result[n].name.toLowerCase()
-      }
-      var taskDesc = ''
-      if (result[n].description) {
-        taskDesc = result[n].description.toLowerCase()
-      }
-      if (taskName.includes(search) || taskDesc.includes(search)) {
-        filteredBySearch.push(result[n])
-      }
+    var matchProject =
+      !adminSelectedProjectId.value ||
+      String(taskProjectId) === String(adminSelectedProjectId.value)
+    var matchUser =
+      !adminSelectedUserId.value || String(taskUserId) === String(adminSelectedUserId.value)
+    var matchStatus =
+      !adminSelectedStatusFilter.value || task.status === adminSelectedStatusFilter.value
+    var matchSearch = !search || taskName.includes(search) || taskDesc.includes(search)
+
+    if (matchProject && matchUser && matchStatus && matchSearch) {
+      result.push(task)
     }
-    result = filteredBySearch
   }
 
   return result
@@ -995,8 +960,7 @@ async function loadAllData() {
       myApplications.value = data.myApplications
     }
   } catch (error) {
-    errorMessage.value = 'Error loading data'
-    console.error(error)
+    console.error('Error loading data:', error)
   }
   isLoading.value = false
 }
@@ -1027,8 +991,6 @@ async function submitApplication() {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      errorMessage.value = errorMsg
     }
   }
   isLoading.value = false
@@ -1063,8 +1025,6 @@ async function createTask(app) {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      errorMessage.value = errorMsg
     }
   }
   isLoadingTasks.value = false
@@ -1099,8 +1059,6 @@ async function createAdminTask() {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      errorMessage.value = errorMsg
     }
   }
   isLoadingTasks.value = false
@@ -1127,8 +1085,6 @@ async function updateTaskStatus(taskId, newStatus) {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      errorMessage.value = errorMsg
     }
   }
   isLoadingTasks.value = false
@@ -1149,11 +1105,7 @@ async function deleteTask(taskId) {
           showTaskPopup.value = false
           selectedTask.value = null
         }
-        if (isAdmin.value) {
-          await loadTasks()
-        } else {
-          await loadTasks()
-        }
+        await loadTasks()
         if (alertRef.value) {
           alertRef.value.show('success', 'Task deleted successfully!', {
             autoClose: true,
@@ -1167,8 +1119,6 @@ async function deleteTask(taskId) {
         }
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
-        } else {
-          errorMessage.value = errorMsg
         }
       }
       isLoadingTasks.value = false
@@ -1178,13 +1128,9 @@ async function deleteTask(taskId) {
 
 onMounted(async () => {
   await loadAllData()
-  if (isAdmin.value) {
-    await loadTasks()
-  } else {
-    await loadTasks()
-    if (myProjects.value.length > 0 && !selectedProjectFilter.value) {
-      selectedProjectFilter.value = myProjects.value[0]._id
-    }
+  await loadTasks()
+  if (!isAdmin.value && myProjects.value.length > 0 && !selectedProjectFilter.value) {
+    selectedProjectFilter.value = myProjects.value[0]._id
   }
 })
 </script>

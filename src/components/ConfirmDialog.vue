@@ -101,14 +101,14 @@
 <script setup>
 import { ref, onMounted, onUpdated, onBeforeUnmount } from 'vue'
 
-const visible = ref(false)
-const type = ref('danger')
-const title = ref('Confirm')
-const message = ref('Are you sure you want to continue?')
-const confirmText = ref('Confirm')
-const cancelText = ref('Cancel')
-const confirmCallback = ref(null)
-const cancelCallback = ref(null)
+var visible = ref(false)
+var type = ref('danger')
+var title = ref('Confirm')
+var message = ref('Are you sure you want to continue?')
+var confirmText = ref('Confirm')
+var cancelText = ref('Cancel')
+var confirmCallback = ref(null)
+var cancelCallback = ref(null)
 
 async function handleConfirm() {
   visible.value = false

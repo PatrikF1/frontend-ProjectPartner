@@ -62,11 +62,9 @@
                       'text-[10px] sm:text-xs p-0.5 sm:p-1 rounded cursor-pointer hover:opacity-80 truncate',
                       event.isProjectDeadline
                         ? 'bg-red-600 text-white'
-                        : event.isAdminEvent
-                          ? 'bg-yellow-600 text-white'
-                          : event.taskId || event.task
-                            ? 'bg-green-600 text-white'
-                            : 'bg-indigo-600 text-white',
+                        : event.taskId || event.task
+                          ? 'bg-green-600 text-white'
+                          : 'bg-indigo-600 text-white',
                     ]"
                     :title="event.title || 'No title'"
                   >
@@ -208,7 +206,6 @@ var errorMessage = ref(null)
 var showAddEventForm = ref(false)
 var selectedEvent = ref(null)
 var events = ref([])
-var myProjects = ref([])
 var confirmDialogRef = ref(null)
 var alertRef = ref(null)
 
@@ -325,20 +322,6 @@ async function loadEvents() {
   isLoading.value = false
 }
 
-async function loadProjects() {
-  try {
-    if (isAdmin.value) {
-      var response = await backend.get('/api/projects')
-      myProjects.value = response.data || []
-    } else {
-      var dashboardResponse = await backend.get('/api/users/dashboard')
-      myProjects.value = dashboardResponse.data.myProjects || []
-    }
-  } catch (e) {
-    errorMessage.value = 'Error loading projects'
-  }
-}
-
 async function addEvent() {
   isLoading.value = true
   try {
@@ -416,7 +399,6 @@ async function deleteEvent(eventId) {
 onMounted(async () => {
   var today = new Date()
   eventForm.date = formatDateForInput(today)
-  await loadProjects()
   await loadEvents()
 })
 </script>

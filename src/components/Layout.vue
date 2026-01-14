@@ -137,51 +137,59 @@ import AIChatbot from './AIChatbot.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
 import defaultAvatar from '@/assets/icon-prof.png'
 
-const mobileMenuOpen = ref(false)
-const confirmDialogRef = ref(null)
+var mobileMenuOpen = ref(false)
+var confirmDialogRef = ref(null)
 
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+var router = useRouter()
+var route = useRoute()
+var authStore = useAuthStore()
 
-const user = computed(() => ({
-  name: authStore.user?.name ? `${authStore.user.name} ${authStore.user.lastname}` : 'User',
-  email: authStore.user?.email || 'user@example.com',
-  imageUrl: authStore.user?.imageUrl || defaultAvatar,
-}))
+var user = computed(function () {
+  var name = 'User'
+  if (authStore.user && authStore.user.name) {
+    name = authStore.user.name + ' ' + authStore.user.lastname
+  }
+  var imageUrl = defaultAvatar
+  if (authStore.user && authStore.user.imageUrl) {
+    imageUrl = authStore.user.imageUrl
+  }
+  return { name: name, imageUrl: imageUrl }
+})
 
-const navigation = computed(() => [
-  {
-    name: 'Dashboard',
-    href: '/dashboard',
-    icon: HomeIcon,
-    current: route.path === '/dashboard',
-  },
-  {
-    name: 'Projects',
-    href: '/projects',
-    icon: FolderIcon,
-    current: route.path === '/projects',
-  },
-  {
-    name: 'Calendar',
-    href: '/calendar',
-    icon: CalendarIcon,
-    current: route.path === '/calendar',
-  },
-  {
-    name: 'Tasks',
-    href: '/tasks',
-    icon: ChartBarIcon,
-    current: route.path === '/tasks',
-  },
-  {
-    name: 'FAQ',
-    href: '/faq',
-    icon: QuestionMarkCircleIcon,
-    current: route.path === '/faq',
-  },
-])
+var navigation = computed(function () {
+  return [
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: HomeIcon,
+      current: route.path === '/dashboard',
+    },
+    {
+      name: 'Projects',
+      href: '/projects',
+      icon: FolderIcon,
+      current: route.path === '/projects',
+    },
+    {
+      name: 'Calendar',
+      href: '/calendar',
+      icon: CalendarIcon,
+      current: route.path === '/calendar',
+    },
+    {
+      name: 'Tasks',
+      href: '/tasks',
+      icon: ChartBarIcon,
+      current: route.path === '/tasks',
+    },
+    {
+      name: 'FAQ',
+      href: '/faq',
+      icon: QuestionMarkCircleIcon,
+      current: route.path === '/faq',
+    },
+  ]
+})
 
 function navigateTo(href) {
   router.push(href)

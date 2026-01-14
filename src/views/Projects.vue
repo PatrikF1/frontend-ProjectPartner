@@ -345,7 +345,6 @@ import { backend } from '@/services/backend'
 import Layout from '@/components/Layout.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Alert from '@/components/Alert.vue'
-import { formatDeadline } from '@/utils/date.js'
 
 var router = useRouter()
 var authStore = useAuthStore()
@@ -354,7 +353,6 @@ var projects = ref([])
 var applications = ref([])
 var loading = ref(false)
 var loadingApplications = ref(false)
-var error = ref(null)
 var editingProject = ref(null)
 var showCreateForm = ref(false)
 var activeTab = ref('pending')
@@ -419,10 +417,7 @@ async function loadProjects() {
     var response = await backend.get('/api/projects')
     projects.value = response.data
   } catch (error) {
-    error.value = 'Error'
-    if (error && error.response && error.response.data && error.response.data.msg) {
-      error.value = error.response.data.msg
-    }
+    console.error('Error loading projects:', error)
   }
   loading.value = false
 }
@@ -434,10 +429,7 @@ async function adminLoadApplications() {
     var response = await backend.get('/api/applications')
     applications.value = response.data
   } catch (error) {
-    error.value = 'Error loading applications'
-    if (error && error.response && error.response.data && error.response.data.msg) {
-      error.value = error.response.data.msg
-    }
+    console.error('Error loading applications:', error)
   }
   loadingApplications.value = false
 }
@@ -465,8 +457,6 @@ async function adminHandleApplication(applicationId, action) {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      error.value = errorMsg
     }
   }
   loadingApplications.value = false
@@ -499,8 +489,6 @@ async function joinProject(projectId) {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      error.value = errorMsg
     }
   }
   loading.value = false
@@ -529,8 +517,6 @@ async function leaveProject(projectId) {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      error.value = errorMsg
     }
   }
   loading.value = false
@@ -563,19 +549,21 @@ async function adminCreateProject() {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      error.value = errorMsg
     }
   }
   loading.value = false
 }
 
 function adminEditProject(project) {
+  var deadline = ''
+  if (project.deadline) {
+    deadline = project.deadline.split('T')[0]
+  }
   editingProject.value = {
     _id: project._id,
     name: project.name,
     description: project.description,
-    deadline: project.deadline ? formatDeadline(project.deadline) : '',
+    deadline: deadline,
   }
 }
 
@@ -609,8 +597,6 @@ async function adminUpdateProject() {
     }
     if (alertRef.value) {
       alertRef.value.show('error', errorMsg)
-    } else {
-      error.value = errorMsg
     }
   }
   loading.value = false
@@ -645,7 +631,6 @@ async function adminEndProject(projectId) {
           }
         }
         projects.value = newProjects
-        selectedProjectId.value = ''
         if (alertRef.value) {
           alertRef.value.show(
             'success',
@@ -663,8 +648,6 @@ async function adminEndProject(projectId) {
         }
         if (alertRef.value) {
           alertRef.value.show('error', errorMsg)
-        } else {
-          error.value = errorMsg
         }
       }
       loading.value = false

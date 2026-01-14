@@ -60,28 +60,23 @@ import Layout from '@/components/Layout.vue'
 import defaultAvatar from '@/assets/icon-prof.png'
 import { backend } from '@/services/backend'
 
-const authStore = useAuthStore()
-const route = useRoute()
+var authStore = useAuthStore()
+var route = useRoute()
 var profileUser = ref(null)
-var isLoading = ref(false)
 
 onMounted(async () => {
   var userId = route.query.userId
   if (userId) {
-    isLoading.value = true
     try {
       var response = await backend.get(`/api/users/${userId}`)
       profileUser.value = response.data
     } catch (error) {
       console.error('Error fetching user:', error)
-      profileUser.value = null
-    } finally {
-      isLoading.value = false
     }
   }
 })
 
-const user = computed(() => {
+var user = computed(function () {
   if (profileUser.value) {
     return profileUser.value
   }

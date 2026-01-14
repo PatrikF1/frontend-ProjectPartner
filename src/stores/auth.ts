@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { backend } from '@/services/backend'
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
-  const token = ref(localStorage.getItem('token'))
-  const isLoading = ref(false)
+export const useAuthStore = defineStore('auth', function () {
+  var user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  var token = ref(localStorage.getItem('token'))
+  var isLoading = ref(false)
 
   function setUser(userData) {
     user.value = userData

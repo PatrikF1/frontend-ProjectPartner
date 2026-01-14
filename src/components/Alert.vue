@@ -63,12 +63,12 @@
 <script setup>
 import { ref, onBeforeUnmount } from 'vue'
 
-const visible = ref(false)
-const type = ref('success')
-const message = ref('')
-const autoClose = ref(false)
-const duration = ref(5000)
-const autoCloseTimer = ref(null)
+var visible = ref(false)
+var type = ref('success')
+var message = ref('')
+var autoClose = ref(false)
+var duration = ref(5000)
+var autoCloseTimer = ref(null)
 
 async function autoCloseAlert() {
   if (autoClose.value && visible.value) {
