@@ -96,10 +96,17 @@
                 </button>
                 <button
                   v-if="isAdmin"
-                  @click="adminEndProject(project._id)"
-                  class="px-2 py-1 bg-orange-600 text-white text-xs rounded-md hover:bg-orange-700"
+                  @click="adminGenerateReport(project._id)"
+                  class="px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
                 >
-                  End Project
+                  Report
+                </button>
+                <button
+                  v-if="isAdmin"
+                  @click="adminDeleteProject(project._id)"
+                  class="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700"
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -602,27 +609,50 @@ async function adminUpdateProject() {
   loading.value = false
 }
 
-async function adminEndProject(projectId) {
+async function adminGenerateReport(projectId) {
+  loading.value = true
+  try {
+    var response = await backend.post('/api/projects/' + projectId + '/report', {})
+
+    if (response.data.pdfUrl) {
+      var link = document.createElement('a')
+      link.href = response.data.pdfUrl
+      link.download = 'project-report-' + projectId + '.pdf'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+
+    if (alertRef.value) {
+      alertRef.value.show('success', 'Report generated and downloaded successfully!', {
+        autoClose: true,
+        duration: 3000,
+      })
+    }
+  } catch (error) {
+    var errorMsg = 'Error generating report'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    }
+  }
+  loading.value = false
+}
+
+async function adminDeleteProject(projectId) {
   confirmDialogRef.value.show({
     type: 'danger',
-    title: 'End Project',
+    title: 'Delete Project',
     message:
-      'Are you sure you want to end this project? A PDF report will be generated with student statistics before the project is deleted. This action cannot be undone.',
-    confirmText: 'End Project',
+      'Are you sure you want to delete this project? All tasks and applications will be deleted. This action cannot be undone.',
+    confirmText: 'Delete',
     cancelText: 'Cancel',
     onConfirm: async function () {
       loading.value = true
       try {
-        var response = await backend.post('/api/projects/' + projectId + '/end', {})
-
-        if (response.data.pdfUrl) {
-          var link = document.createElement('a')
-          link.href = response.data.pdfUrl
-          link.download = 'project-report-' + projectId + '.pdf'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-        }
+        await backend.delete('/api/projects/' + projectId)
 
         var newProjects = []
         for (var i = 0; i < projects.value.length; i++) {
@@ -631,18 +661,15 @@ async function adminEndProject(projectId) {
           }
         }
         projects.value = newProjects
+
         if (alertRef.value) {
-          alertRef.value.show(
-            'success',
-            'Project ended successfully! PDF report has been generated and downloaded.',
-            {
-              autoClose: true,
-              duration: 5000,
-            },
-          )
+          alertRef.value.show('success', 'Project deleted successfully!', {
+            autoClose: true,
+            duration: 3000,
+          })
         }
       } catch (error) {
-        var errorMsg = 'Error ending project'
+        var errorMsg = 'Error deleting project'
         if (error && error.response && error.response.data && error.response.data.msg) {
           errorMsg = error.response.data.msg
         }
