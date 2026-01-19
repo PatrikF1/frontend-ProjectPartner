@@ -131,6 +131,42 @@
                 </div>
               </div>
             </div>
+
+            <div class="border-t border-gray-600 pt-3 mt-3">
+              <div class="flex justify-between items-center mb-2">
+                <p class="text-gray-300 text-xs font-semibold">Files:</p>
+                <button
+                  v-if="isAdmin || isJoined(project)"
+                  @click="openAddFileModal(project)"
+                  class="px-2 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700"
+                >
+                  Add Link
+                </button>
+              </div>
+              <div v-if="project.files && project.files.length > 0" class="space-y-1">
+                <div
+                  v-for="file in project.files"
+                  :key="file._id"
+                  class="flex justify-between items-center bg-gray-600 rounded px-2 py-1"
+                >
+                  <a
+                    :href="file.url"
+                    target="_blank"
+                    class="text-blue-400 text-xs hover:underline truncate max-w-[150px]"
+                  >
+                    {{ file.name }}
+                  </a>
+                  <button
+                    v-if="isAdmin || String(file.addedBy?._id || file.addedBy) === authStore.user?._id"
+                    @click="deleteFile(project._id, file._id)"
+                    class="text-red-400 text-xs hover:text-red-300 ml-2"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              <p v-else class="text-gray-500 text-xs">No files added yet.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -179,6 +215,56 @@
               <button
                 type="button"
                 @click="editingProject = null"
+                class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div
+        v-if="addingFileToProject"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+          <h3 class="text-lg font-medium text-white mb-4">Add File Link</h3>
+
+          <form @submit.prevent="addFile" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">File Name</label>
+              <input
+                v-model="fileForm.name"
+                type="text"
+                required
+                placeholder="e.g. Project Documentation"
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">URL</label>
+              <input
+                v-model="fileForm.url"
+                type="url"
+                required
+                placeholder="https://github.com/... or https://drive.google.com/..."
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div class="flex space-x-2">
+              <button
+                type="submit"
+                :disabled="loading"
+                class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {{ loading ? 'Adding...' : 'Add' }}
+              </button>
+              <button
+                type="button"
+                @click="addingFileToProject = null"
                 class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
               >
                 Cancel
@@ -370,6 +456,12 @@ var form = reactive({
   name: '',
   description: '',
   deadline: '',
+})
+
+var addingFileToProject = ref(null)
+var fileForm = reactive({
+  name: '',
+  url: '',
 })
 
 var isAdmin = computed(() => {
@@ -680,6 +772,81 @@ async function adminDeleteProject(projectId) {
       loading.value = false
     },
   })
+}
+
+function openAddFileModal(project) {
+  addingFileToProject.value = project
+  fileForm.name = ''
+  fileForm.url = ''
+}
+
+async function addFile() {
+  if (!addingFileToProject.value) return
+  loading.value = true
+  try {
+    var projectId = addingFileToProject.value._id
+    var response = await backend.post('/api/projects/' + projectId + '/files', {
+      name: fileForm.name,
+      url: fileForm.url,
+    })
+    
+    for (var i = 0; i < projects.value.length; i++) {
+      if (projects.value[i]._id === projectId) {
+        projects.value[i].files = response.data.files
+        break
+      }
+    }
+    
+    addingFileToProject.value = null
+    fileForm.name = ''
+    fileForm.url = ''
+    
+    if (alertRef.value) {
+      alertRef.value.show('success', 'File link added successfully!', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
+  } catch (error) {
+    var errorMsg = 'Error adding file'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    }
+  }
+  loading.value = false
+}
+
+async function deleteFile(projectId, fileId) {
+  loading.value = true
+  try {
+    var response = await backend.delete('/api/projects/' + projectId + '/files/' + fileId)
+    
+    for (var i = 0; i < projects.value.length; i++) {
+      if (projects.value[i]._id === projectId) {
+        projects.value[i].files = response.data.files
+        break
+      }
+    }
+    
+    if (alertRef.value) {
+      alertRef.value.show('success', 'File deleted successfully!', {
+        autoClose: true,
+        duration: 2000,
+      })
+    }
+  } catch (error) {
+    var errorMsg = 'Error deleting file'
+    if (error && error.response && error.response.data && error.response.data.msg) {
+      errorMsg = error.response.data.msg
+    }
+    if (alertRef.value) {
+      alertRef.value.show('error', errorMsg)
+    }
+  }
+  loading.value = false
 }
 
 onMounted(async () => {
