@@ -102,7 +102,7 @@ var faqs = [
   {
     question: 'What can the AI Helper do?',
     answer:
-      'The AI can answer questions about your projects, help with deadlines, suggest task priorities, and help solve problems you encounter.',
+      'The AI can answer questions about your projects, help with deadlines, and provide recommendations and solutions for problems you encounter during project work.',
   },
   {
     question: 'What can my professor see?',
@@ -121,7 +121,12 @@ var faqs = [
   {
     question: 'What is the difference between student and admin?',
     answer:
-      '<strong>Students</strong> join projects, submit applications, and create tasks. <strong>Admins (professors)</strong> create projects, approve applications, and generate reports.',
+      '<strong>Students</strong> join projects, submit applications, and create their own tasks. <strong>Admins (professors)</strong> create projects, assign tasks to students, approve applications, and generate PDF reports.',
+  },
+  {
+    question: 'How do I share files with my team?',
+    answer:
+      'Go to <strong>Projects</strong> page, find your project, and click "Add Link". You can add links to GitHub repositories, Google Drive, Dropbox, or any other file sharing service. All team members can see and access these links.',
   },
 ]
 </script>

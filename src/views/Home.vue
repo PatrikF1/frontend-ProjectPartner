@@ -51,7 +51,7 @@
           <h3 class="text-xl font-semibold mb-3">AI Helper</h3>
           <p class="text-gray-400">
             Get instant answers to common questions about projects, deadlines, and technology. The
-            AI assistant can also help create tasks and projects.
+            AI assistant helps solve problems you encounter during project work.
           </p>
         </div>
 
@@ -107,11 +107,11 @@
           <div>
             <h4 class="text-lg font-semibold text-indigo-400 mb-2">For Students</h4>
             <ul class="text-gray-400 space-y-2">
-              <li>• Join or create projects</li>
-              <li>• Create and manage tasks</li>
+              <li>• Join projects</li>
+              <li>• Create and manage your tasks</li>
               <li>• Get AI assistance with questions</li>
               <li>• Track deadlines and progress</li>
-              <li>• Submit project applications</li>
+              <li>• Share files with your team</li>
             </ul>
           </div>
           <div>
@@ -121,7 +121,7 @@
               <li>• Assign tasks to students</li>
               <li>• Monitor student activity</li>
               <li>• Review project applications</li>
-              <li>• Generate progress reports</li>
+              <li>• Generate PDF reports</li>
             </ul>
           </div>
         </div>
