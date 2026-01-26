@@ -327,12 +327,12 @@
                         <span
                           :class="
                             task.status === 'completed'
-                              ? 'bg-green-600 text-white'
+                              ? 'text-green-400'
                               : task.status === 'in-progress'
-                                ? 'bg-yellow-600 text-white'
-                                : 'bg-gray-500 text-white'
+                                ? 'text-yellow-400'
+                                : 'text-gray-400'
                           "
-                          class="px-4 py-2 text-sm rounded font-medium"
+                          class="text-sm font-medium"
                         >
                           {{ task.status }}
                         </span>
@@ -529,12 +529,12 @@
                   <span
                     :class="
                       task.status === 'completed'
-                        ? 'bg-green-600 text-white'
+                        ? 'text-green-400'
                         : task.status === 'in-progress'
-                          ? 'bg-yellow-600 text-white'
-                          : 'bg-gray-500 text-white'
+                          ? 'text-yellow-400'
+                          : 'text-gray-400'
                     "
-                    class="px-4 py-2 text-sm rounded font-medium"
+                    class="text-sm font-medium"
                   >
                     {{ task.status }}
                   </span>

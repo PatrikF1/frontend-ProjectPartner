@@ -48,7 +48,7 @@
                 : 'bg-gray-700 text-gray-200 border border-gray-600'
             "
           >
-            <p class="text-sm leading-relaxed">{{ message.content }}</p>
+            <div class="text-sm leading-relaxed markdown-content" v-html="formatMarkdown(message.content)"></div>
           </div>
         </div>
 
@@ -85,12 +85,18 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { backend } from '@/services/backend'
+import { parse } from 'marked'
 
 var authStore = useAuthStore()
 var isOpen = ref(false)
 var input = ref('')
 var messages = ref([])
 var isLoading = ref(false)
+
+function formatMarkdown(text) {
+  if (!text) return ''
+  return parse(text)
+}
 
 async function handleSubmit() {
   if (!input.value.trim() || isLoading.value) return
