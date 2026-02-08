@@ -34,6 +34,18 @@
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-900">
+        <div v-if="messages.length === 0" class="space-y-2">
+          <p class="text-gray-400 text-sm mb-3">Try asking:</p>
+          <button
+            v-for="suggestion in suggestions"
+            :key="suggestion"
+            @click="askSuggestion(suggestion)"
+            class="block w-full text-left px-3 py-2 bg-gray-700 text-gray-300 text-sm rounded hover:bg-gray-600"
+          >
+            {{ suggestion }}
+          </button>
+        </div>
+
         <div
           v-for="message in messages"
           :key="message.id"
@@ -92,6 +104,20 @@ var isOpen = ref(false)
 var input = ref('')
 var messages = ref([])
 var isLoading = ref(false)
+
+var suggestions = [
+  'What are my tasks?',
+  'Show my projects',
+  'What should I work on next?',
+  'Create a task for me',
+  'Help me prioritize',
+  'What is overdue?'
+]
+
+function askSuggestion(text) {
+  input.value = text
+  handleSubmit()
+}
 
 function formatMarkdown(text) {
   if (!text) return ''
