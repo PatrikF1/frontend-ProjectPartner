@@ -1,33 +1,85 @@
-# frontend-ProjectPartner
+# PROJECT PARTNER - APLIKACIJA ZA PODRŠKU STUDENTIMA U IZRADI PROJEKATA
 
-This template should help get you started developing with Vue 3 in Vite.
+**Završni rad**  
+**Autor:** Patrik Fabijanić  
+**Mentor:** izv. prof. dr. sc. Nikola Tanković  
+**Sveučilište Jurja Dobrile u Puli, Sveučilišni preddiplomski studij Informatika**  
+**Kolegij:** Web aplikacije  
 
-## Recommended IDE Setup
+---
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Sažetak
 
-## Type Support for `.vue` Imports in TS
+Vođen idejom rješavanja problema organizacije studentskih projekata, razvio sam web aplikaciju **ProjectPartner** koja pomaže studentima i profesorima u upravljanju projektima. Aplikacija rješava problem poznat kao „nadzor bez gušenja" — omogućava profesoru praćenje napretka bez konstantnog direktnog kontakta. Sustav pruža centralizirano mjesto za projekte, zadatke, rokove i dokumente, kalendar s rokovima te AI asistenta koji pomaže studentima pri radu na projektima.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
+## Funkcionalnosti
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Studenti
+- Pregled dostupnih projekata i pridruživanje projektu
+- Prijava na projekt s vlastitom idejom
+- Kreiranje i upravljanje zadacima
+- Promjena statusa zadataka (not-started, in-progress, completed)
+- Pregled kalendara s rokovima projekata i zadataka
+- Dodavanje i brisanje vlastitih kalendarskih događaja
+- Korištenje AI asistenta za pomoć pri radu
+- Dodavanje poveznica na datoteke (GitHub, Google Drive)
 
-## Project Setup
 
-```sh
+### Profesori
+- Kreiranje, uređivanje i brisanje projekata
+- Odobravanje i odbijanje prijava studenata
+- Kreiranje zadataka za bilo koji projekt
+- Generiranje PDF izvještaja završenog projekta
+- Pregled profila članova tima
+- Upravljanje kalendarskim događajima
+- Brisanje bilo koje poveznice na datoteku
+
+### AI Asistent
+- Dostupan na svim stranicama aplikacije
+- Daje odgovore na temelju konteksta projekata i zadataka korisnika
+- Predložena pitanja za brzi unos
+
+
+---
+
+## Tehnologije
+
+| Dio aplikacije | Tehnologije |
+|---|---|
+| **Frontend** | Vue 3, TypeScript, Tailwind CSS, Pinia, Vue Router, Vite |
+| **Backend** | Node.js, Express.js, TypeScript |
+| **Baza podataka** | MongoDB, Mongoose |
+| **Autentikacija** | JWT (JSON Web Token), Bcrypt |
+| **Ostalo** | OpenAI API, PDF-lib |
+
+---
+
+## Pokretanje projekta
+
+### Backend
+```bash
+cd backend-ProjectPartner-main
 npm install
+npm run build
+npm start
 ```
 
-### Compile and Hot-Reload for Development
-
-```sh
+### Frontend
+```bash
+cd frontend-ProjectPartner
+npm install
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
 
-```sh
-npm run build
-```
+> **Pristupni kod za registraciju profesora:** `Private123`
+
+---
+
+## Web aplikacija
+ **https://frontend-project-partner.vercel.app/**
+
+
+
